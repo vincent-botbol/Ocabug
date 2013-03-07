@@ -6,5 +6,5 @@ Visual ocaml debugger
 
 package required :
 
-liblablgtk2-gl-ocaml[-dev]
+liblablgtk2-ocaml[-dev]
 liblablgtksourceview2-ocaml[-dev]
