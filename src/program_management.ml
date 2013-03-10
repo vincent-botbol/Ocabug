@@ -1,9 +1,9 @@
 (***********************************************************************)
 (*                                                                     *)
-(*                                OCaml                                *)
+(*                           Objective Caml                            *)
 (*                                                                     *)
 (*          Jerome Vouillon, projet Cristal, INRIA Rocquencourt        *)
-(*          OCaml port by John Malecki and Xavier Leroy                *)
+(*          Objective Caml port by John Malecki and Xavier Leroy       *)
 (*                                                                     *)
 (*  Copyright 1996 Institut National de Recherche en Informatique et   *)
 (*  en Automatique.  All rights reserved.  This file is distributed    *)
@@ -11,7 +11,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: program_management.ml 12511 2012-05-30 13:29:48Z lefessan $ *)
+(* $Id: program_management.ml 10450 2010-05-21 12:00:49Z doligez $ *)
 
 (* Manage the loading of the program *)
 
@@ -116,10 +116,8 @@ let ask_kill_program () =
 (*** Program loading and initializations. ***)
 
 let initialize_loading () =
-  if !debug_loading then begin
+  if !debug_loading then
     prerr_endline "Loading debugging information...";
-    Printf.fprintf Pervasives.stderr "\tProgram: [%s]\n%!" !program_name;
-  end;
   begin try access !program_name [F_OK]
   with Unix_error _ ->
     prerr_endline "Program not found.";

@@ -1,6 +1,6 @@
 #########################################################################
 #                                                                       #
-#                                 OCaml                                 #
+#                            Objective Caml                             #
 #                                                                       #
 #            Xavier Leroy, projet Cristal, INRIA Rocquencourt           #
 #                                                                       #
@@ -10,11 +10,11 @@
 #                                                                       #
 #########################################################################
 
-# $Id: Makefile.shared 12526 2012-05-31 12:41:49Z lefessan $
+# $Id: Makefile.shared 10413 2010-05-17 15:49:53Z doligez $
 
 include $(CAML_SRC_PATH)/config/Makefile
 
-CAMLC=$(CAML_SRC_PATH)/ocamlcomp.sh
+CAMLC=ocamlc
 COMPFLAGS=-warn-error A $(INCLUDES)
 LINKFLAGS=-linkall -I $(UNIXDIR)
 CAMLYACC=$(CAML_SRC_PATH)/boot/ocamlyacc
@@ -29,13 +29,13 @@ INCLUDES=\
 
 OTHEROBJS=\
   $(UNIXDIR)/unix.cma \
-  $(CAML_SRC_PATH)/utils/misc.cmo $(CAML_SRC_PATH)/utils/config.cmo $(CAML_SRC_PATH)/utils/tbl.cmo \
-  $(CAML_SRC_PATH)/utils/clflags.cmo $(CAML_SRC_PATH)/utils/consistbl.cmo $(CAML_SRC_PATH)/utils/warnings.cmo \
-  $(CAML_SRC_PATH)/parsing/location.cmo $(CAML_SRC_PATH)/parsing/longident.cmo \
+  $(CAML_SRC_PATH)/utils/misc.cmo $(CAML_SRC_PATH)/utils/config.cmo \
+  $(CAML_SRC_PATH)/utils/tbl.cmo $(CAML_SRC_PATH)/utils/clflags.cmo $(CAML_SRC_PATH)/utils/consistbl.cmo \
+  $(CAML_SRC_PATH)/parsing/longident.cmo \
   $(CAML_SRC_PATH)/typing/ident.cmo $(CAML_SRC_PATH)/typing/path.cmo $(CAML_SRC_PATH)/typing/types.cmo \
   $(CAML_SRC_PATH)/typing/btype.cmo $(CAML_SRC_PATH)/typing/primitive.cmo $(CAML_SRC_PATH)/typing/typedtree.cmo \
   $(CAML_SRC_PATH)/typing/subst.cmo $(CAML_SRC_PATH)/typing/predef.cmo \
-  $(CAML_SRC_PATH)/typing/datarepr.cmo $(CAML_SRC_PATH)/typing/cmi_format.cmo $(CAML_SRC_PATH)/typing/env.cmo $(CAML_SRC_PATH)/typing/oprint.cmo \
+  $(CAML_SRC_PATH)/typing/datarepr.cmo $(CAML_SRC_PATH)/typing/env.cmo $(CAML_SRC_PATH)/typing/oprint.cmo \
   $(CAML_SRC_PATH)/typing/ctype.cmo $(CAML_SRC_PATH)/typing/printtyp.cmo $(CAML_SRC_PATH)/typing/mtype.cmo \
   $(CAML_SRC_PATH)/bytecomp/runtimedef.cmo $(CAML_SRC_PATH)/bytecomp/bytesections.cmo \
   $(CAML_SRC_PATH)/bytecomp/dll.cmo $(CAML_SRC_PATH)/bytecomp/meta.cmo $(CAML_SRC_PATH)/bytecomp/symtable.cmo \
@@ -75,18 +75,20 @@ OBJS=\
 	loadprinter.cmo \
 	parser.cmo \
 	command_line.cmo \
+	ui_starter.cmo \
 	main.cmo
 
-all: depend ocamldebug$(EXE)
+all: ocabug$(EXE)
 
-ocamldebug$(EXE): $(OBJS) $(OTHEROBJS)
-	$(CAMLC) $(LINKFLAGS) -o ocamldebug$(EXE) -linkall $(OTHEROBJS) $(OBJS)
+ocabug$(EXE): $(OBJS) $(OTHEROBJS)
+	$(CAMLC) -I +lablgtk2 lablgtk.cma lablgtksourceview2.cma $(LINKFLAGS) \
+	-o ocabug$(EXE) -linkall $(OTHEROBJS) $(OBJS)
 
 install:
-	cp ocamldebug$(EXE) $(BINDIR)/ocamldebug$(EXE)
+	cp ocabug$(EXE) $(BINDIR)/ocabug$(EXE)
 
 clean::
-	rm -f ocamldebug$(EXE)
+	rm -f ocabug$(EXE)
 	rm -f *.cmo *.cmi
 
 .SUFFIXES:
@@ -97,6 +99,12 @@ clean::
 
 .mli.cmi:
 	$(CAMLC) -c $(COMPFLAGS) $<
+
+#####
+ui_starter.cmo:ui_starter.ml
+	$(CAMLC) $(LINKFLAGS) -I +lablgtk2 \
+	 -c -linkall $(OTHEROBJS) $(OBJS) $<
+####
 
 depend: beforedepend
 	$(CAMLDEP) $(DEPFLAGS) *.mli *.ml \
@@ -123,4 +131,4 @@ clean::
 	rm -f dynlink.ml dynlink.mli
 beforedepend:: dynlink.ml dynlink.mli
 
--include .depend
+include .depend

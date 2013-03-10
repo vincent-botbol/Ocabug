@@ -1,9 +1,9 @@
 /***********************************************************************/
 /*                                                                     */
-/*                                OCaml                                */
+/*                           Objective Caml                            */
 /*                                                                     */
 /*          Jerome Vouillon, projet Cristal, INRIA Rocquencourt        */
-/*          OCaml port by John Malecki and Xavier Leroy                */
+/*          Objective Caml port by John Malecki and Xavier Leroy       */
 /*                                                                     */
 /*  Copyright 1996 Institut National de Recherche en Informatique et   */
 /*  en Automatique.  All rights reserved.  This file is distributed    */
@@ -11,7 +11,7 @@
 /*                                                                     */
 /***********************************************************************/
 
-/* $Id: parser.mly 12210 2012-03-08 19:52:03Z doligez $ */
+/* $Id: parser.mly 9547 2010-01-22 12:48:24Z doligez $ */
 
 %{
 
@@ -170,8 +170,6 @@ longident :
     LIDENT                      { Lident $1 }
   | module_path DOT LIDENT      { Ldot($1, $3) }
   | OPERATOR                    { Lident $1 }
-  | module_path DOT OPERATOR    { Ldot($1, $3) }
-  | module_path DOT LPAREN OPERATOR RPAREN { Ldot($1, $4) }
 ;
 
 module_path :

@@ -1,9 +1,9 @@
 (***********************************************************************)
 (*                                                                     *)
-(*                                OCaml                                *)
+(*                           Objective Caml                            *)
 (*                                                                     *)
 (*          Jerome Vouillon, projet Cristal, INRIA Rocquencourt        *)
-(*          OCaml port by John Malecki and Xavier Leroy                *)
+(*          Objective Caml port by John Malecki and Xavier Leroy       *)
 (*                                                                     *)
 (*  Copyright 1996 Institut National de Recherche en Informatique et   *)
 (*  en Automatique.  All rights reserved.  This file is distributed    *)
@@ -11,7 +11,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: printval.ml 12689 2012-07-10 14:54:19Z doligez $ *)
+(* $Id: printval.ml 9547 2010-01-22 12:48:24Z doligez $ *)
 
 (* To print values *)
 
@@ -47,7 +47,7 @@ let check_depth ppf depth obj ty =
 
 module EvalPath =
   struct
-    type valu = Debugcom.Remote_value.t
+    type value = Debugcom.Remote_value.t
     exception Error
     let rec eval_path = function
       Pident id ->

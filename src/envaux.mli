@@ -1,9 +1,9 @@
 (***********************************************************************)
 (*                                                                     *)
-(*                                OCaml                                *)
+(*                           Objective Caml                            *)
 (*                                                                     *)
 (*          Jerome Vouillon, projet Cristal, INRIA Rocquencourt        *)
-(*          OCaml port by John Malecki and Xavier Leroy                *)
+(*          Objective Caml port by John Malecki and Xavier Leroy       *)
 (*                                                                     *)
 (*  Copyright 1996 Institut National de Recherche en Informatique et   *)
 (*  en Automatique.  All rights reserved.  This file is distributed    *)
@@ -11,13 +11,12 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: envaux.mli 12700 2012-07-11 17:23:37Z lefessan $ *)
+(* $Id: envaux.mli 2908 2000-03-06 22:12:09Z weis $ *)
 
 open Format
 
 (* Convert environment summaries to environments *)
 
-val env_from_summary : Env.summary -> Subst.t -> Env.t
 val env_of_event: Instruct.debug_event option -> Env.t
 
 (* Empty the environment caches. To be called when load_path changes. *)

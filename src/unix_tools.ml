@@ -1,9 +1,9 @@
 (***********************************************************************)
 (*                                                                     *)
-(*                                OCaml                                *)
+(*                           Objective Caml                            *)
 (*                                                                     *)
 (*          Jerome Vouillon, projet Cristal, INRIA Rocquencourt        *)
-(*          OCaml port by John Malecki and Xavier Leroy                *)
+(*          Objective Caml port by John Malecki and Xavier Leroy       *)
 (*                                                                     *)
 (*  Copyright 1996 Institut National de Recherche en Informatique et   *)
 (*  en Automatique.  All rights reserved.  This file is distributed    *)
@@ -11,7 +11,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: unix_tools.ml 12511 2012-05-30 13:29:48Z lefessan $ *)
+(* $Id: unix_tools.ml 9270 2009-05-20 11:52:42Z doligez $ *)
 
 (****************** Tools for Unix *************************************)
 
@@ -58,7 +58,6 @@ let report_error = function
 (* Return the full path if found. *)
 (* Raise `Not_found' otherwise. *)
 let search_in_path name =
-  Printf.fprintf Pervasives.stderr "search_in_path [%s]\n%!" name;
   let check name =
     try access name [X_OK]; name with Unix_error _ -> raise Not_found
   in

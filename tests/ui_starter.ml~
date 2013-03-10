@@ -76,17 +76,12 @@ END SOURCE
 let () = ignore(GMisc.separator `HORIZONTAL ~packing:vbox#add ())
 let invite = (new command_invite vbox)#pack ()
 
-
-
-
-let main () =
+let show_ui () =
   load_source_file "test.ml";
   window#show ();
   GMain.Main.main ()
-    
-let _ = main ()
 
-
+let () = show_ui ()
 
 (*let load_file this buffer =
   let path = (match this#filename with Some s -> s 

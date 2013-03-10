@@ -1,9 +1,9 @@
 (***********************************************************************)
 (*                                                                     *)
-(*                                OCaml                                *)
+(*                           Objective Caml                            *)
 (*                                                                     *)
 (*          Jerome Vouillon, projet Cristal, INRIA Rocquencourt        *)
-(*          OCaml port by John Malecki and Xavier Leroy                *)
+(*          Objective Caml port by John Malecki and Xavier Leroy       *)
 (*                                                                     *)
 (*  Copyright 1996 Institut National de Recherche en Informatique et   *)
 (*  en Automatique.  All rights reserved.  This file is distributed    *)
@@ -11,7 +11,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: debugger_config.ml 12210 2012-03-08 19:52:03Z doligez $ *)
+(* $Id: debugger_config.ml 9547 2010-01-22 12:48:24Z doligez $ *)
 
 (**************************** Configuration file ***********************)
 
@@ -56,7 +56,7 @@ let shell =
     "Win32" -> "cmd"
   | _ -> "/bin/sh"
 
-(* Name of the OCaml runtime. *)
+(* Name of the Objective Caml runtime. *)
 let runtime_program = "ocamlrun"
 
 (* Time history size (for `last') *)
@@ -80,7 +80,3 @@ let make_checkpoints = ref
   (match Sys.os_type with
     "Win32" -> false
   | _ -> true)
-
-(*** Environment variables for debugee. ***)
-
-let environment = ref []

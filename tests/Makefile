@@ -1,13 +1,12 @@
-CC=ocamlc
-FLAGS=-I +lablgtk2 lablgtk.cma lablgtksourceview2.cma gtkInit.cmo
+CC=ocamlc -I +lablgtk2 lablgtk.cma lablgtksourceview2.cma
 
-all: test
+all: ui_starter
 
-test:test.ml
-	$(CC) $(FLAGS) -o $@ $<
+ui_starter:ui_starter.ml
+	$(CC) $< -o $@
 
 run: all
-	./test
+	./ui_starter
 
 clean:
-	rm -fr *.cm[io] *~ test
+	rm -fr *.cm[io] *~ ui_starter

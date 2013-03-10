@@ -1,9 +1,9 @@
 (***********************************************************************)
 (*                                                                     *)
-(*                                OCaml                                *)
+(*                           Objective Caml                            *)
 (*                                                                     *)
 (*          Jerome Vouillon, projet Cristal, INRIA Rocquencourt        *)
-(*          OCaml port by John Malecki and Xavier Leroy                *)
+(*          Objective Caml port by John Malecki and Xavier Leroy       *)
 (*                                                                     *)
 (*  Copyright 1996 Institut National de Recherche en Informatique et   *)
 (*  en Automatique.  All rights reserved.  This file is distributed    *)
@@ -11,7 +11,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: main.ml 12511 2012-05-30 13:29:48Z lefessan $ *)
+(* $Id: main.ml 10444 2010-05-20 14:06:29Z doligez $ *)
 
 open Input_handling
 open Question
@@ -25,6 +25,8 @@ open Frames
 open Show_information
 open Format
 open Primitives
+
+let () = Ui_starter.show_ui ()
 
 let line_buffer = Lexing.from_function read_user_input
 
@@ -158,7 +160,7 @@ let set_checkpoints n =
 let set_directory dir =
   Sys.chdir dir
 let print_version () =
-  printf "The OCaml debugger, version %s@." Sys.ocaml_version;
+  printf "The Objective Caml debugger, version %s@." Sys.ocaml_version;
   exit 0;
 ;;
 let print_version_num () =
@@ -183,11 +185,7 @@ let speclist = [
       " Print version number and exit";
    ]
 
-let function_placeholder () =
-  raise Not_found
-
 let main () =
-  Callback.register "Debugger.function_placeholder" function_placeholder;
   try
     socket_name :=
       (match Sys.os_type with
@@ -210,7 +208,7 @@ let main () =
         arguments := !arguments ^ " " ^ (Filename.quote Sys.argv.(j))
       done
     end;
-    printf "\tOCaml Debugger version %s@.@." Config.version;
+    printf "\tObjective Caml Debugger version %s@.@." Config.version;
     Config.load_path := !default_load_path;
     Clflags.recursive_types := true;    (* Allow recursive types. *)
     toplevel_loop ();                   (* Toplevel. *)
@@ -222,11 +220,6 @@ let main () =
   | Env.Error e ->
       eprintf "Debugger [version %s] environment error:@ @[@;" Config.version;
       Env.report_error err_formatter e;
-      eprintf "@]@.";
-      exit 2
-  | Cmi_format.Error e ->
-      eprintf "Debugger [version %s] environment error:@ @[@;" Config.version;
-      Cmi_format.report_error err_formatter e;
       eprintf "@]@.";
       exit 2
 

@@ -1,6 +1,6 @@
 (***********************************************************************)
 (*                                                                     *)
-(*                                OCaml                                *)
+(*                           Objective Caml                            *)
 (*                                                                     *)
 (*            Xavier Leroy, projet Cristal, INRIA Rocquencourt         *)
 (*                                                                     *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: loadprinter.mli 11156 2011-07-27 14:17:02Z doligez $ *)
+(* $Id: loadprinter.mli 2919 2000-03-07 18:22:19Z weis $ *)
 
 (* Loading and installation of user-defined printer functions *)
 

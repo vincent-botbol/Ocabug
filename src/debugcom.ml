@@ -1,9 +1,9 @@
 (***********************************************************************)
 (*                                                                     *)
-(*                                OCaml                                *)
+(*                           Objective Caml                            *)
 (*                                                                     *)
 (*          Jerome Vouillon, projet Cristal, INRIA Rocquencourt        *)
-(*          OCaml port by John Malecki and Xavier Leroy                *)
+(*          Objective Caml port by John Malecki and Xavier Leroy       *)
 (*                                                                     *)
 (*  Copyright 1996 Institut National de Recherche en Informatique et   *)
 (*  en Automatique.  All rights reserved.  This file is distributed    *)
@@ -11,7 +11,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: debugcom.ml 12184 2012-02-23 19:54:44Z doligez $ *)
+(* $Id: debugcom.ml 10287 2010-04-20 15:47:15Z doligez $ *)
 
 (* Low-level communication with the debuggee *)
 
@@ -189,7 +189,8 @@ let set_trap_barrier pos =
 let value_size = if 1 lsl 31 = 0 then 4 else 8
 
 let input_remote_value ic =
-  Misc.input_bytes ic value_size
+  let v = String.create value_size in
+  really_input ic v 0 value_size; v
 
 let output_remote_value ic v =
   output ic v 0 value_size
@@ -246,7 +247,8 @@ module Remote_value =
           if input_byte !conn.io_in = 0 then
             Remote(input_remote_value !conn.io_in)
           else begin
-            let buf = Misc.input_bytes !conn.io_in 8 in
+            let buf = String.create 8 in
+            really_input !conn.io_in buf 0 8;
             let floatbuf = float n (* force allocation of a new float *) in
             String.unsafe_blit buf 0 (Obj.magic floatbuf) 0 8;
             Local(Obj.repr floatbuf)

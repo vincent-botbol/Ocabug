@@ -1,9 +1,9 @@
 (***********************************************************************)
 (*                                                                     *)
-(*                                OCaml                                *)
+(*                           Objective Caml                            *)
 (*                                                                     *)
 (*          Jerome Vouillon, projet Cristal, INRIA Rocquencourt        *)
-(*          OCaml port by John Malecki and Xavier Leroy                *)
+(*          Objective Caml port by John Malecki and Xavier Leroy       *)
 (*                                                                     *)
 (*  Copyright 1996 Institut National de Recherche en Informatique et   *)
 (*  en Automatique.  All rights reserved.  This file is distributed    *)
@@ -11,7 +11,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: eval.ml 12511 2012-05-30 13:29:48Z lefessan $ *)
+(* $Id: eval.ml 9547 2010-01-22 12:48:24Z doligez $ *)
 
 open Misc
 open Path
@@ -149,7 +149,7 @@ and find_label lbl env ty path tydesc pos = function
     [] ->
       raise(Error(Wrong_label(ty, lbl)))
   | (name, mut, ty_arg) :: rem ->
-      if Ident.name name = lbl then begin
+      if name = lbl then begin
         let ty_res =
           Btype.newgenty(Tconstr(path, tydesc.type_params, ref Mnil))
         in

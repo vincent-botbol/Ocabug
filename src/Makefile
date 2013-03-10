@@ -1,6 +1,6 @@
 #########################################################################
 #                                                                       #
-#                                 OCaml                                 #
+#                            Objective Caml                             #
 #                                                                       #
 #            Xavier Leroy, projet Cristal, INRIA Rocquencourt           #
 #                                                                       #
@@ -10,8 +10,8 @@
 #                                                                       #
 #########################################################################
 
-# $Id: Makefile 11156 2011-07-27 14:17:02Z doligez $
+# $Id: Makefile 8955 2008-07-29 08:31:41Z xleroy $
 
-CAML_SRC_PATH=~/PSTL/ocaml_src/
+CAML_SRC_PATH=~/PSTL/ocaml_src
 UNIXDIR=$(CAML_SRC_PATH)/otherlibs/unix
 include Makefile.shared

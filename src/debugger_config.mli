@@ -1,9 +1,9 @@
 (***********************************************************************)
 (*                                                                     *)
-(*                                OCaml                                *)
+(*                           Objective Caml                            *)
 (*                                                                     *)
 (*          Jerome Vouillon, projet Cristal, INRIA Rocquencourt        *)
-(*          OCaml port by John Malecki and Xavier Leroy                *)
+(*          Objective Caml port by John Malecki and Xavier Leroy       *)
 (*                                                                     *)
 (*  Copyright 1996 Institut National de Recherche en Informatique et   *)
 (*  en Automatique.  All rights reserved.  This file is distributed    *)
@@ -11,7 +11,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: debugger_config.mli 12210 2012-03-08 19:52:03Z doligez $ *)
+(* $Id: debugger_config.mli 9547 2010-01-22 12:48:24Z doligez $ *)
 
 (********************** Configuration file *****************************)
 
@@ -33,7 +33,3 @@ val checkpoint_big_step : int64 ref
 val checkpoint_small_step : int64 ref
 val checkpoint_max_count : int ref
 val make_checkpoints : bool ref
-
-(*** Environment variables for debugee. ***)
-
-val environment : string list ref
