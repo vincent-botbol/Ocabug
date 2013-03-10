@@ -1,0 +1,126 @@
+#########################################################################
+#                                                                       #
+#                                 OCaml                                 #
+#                                                                       #
+#            Xavier Leroy, projet Cristal, INRIA Rocquencourt           #
+#                                                                       #
+#   Copyright 1999 Institut National de Recherche en Informatique et    #
+#   en Automatique.  All rights reserved.  This file is distributed     #
+#   under the terms of the Q Public License version 1.0.                #
+#                                                                       #
+#########################################################################
+
+# $Id: Makefile.shared 12526 2012-05-31 12:41:49Z lefessan $
+
+include $(CAML_SRC_PATH)/config/Makefile
+
+CAMLC=$(CAML_SRC_PATH)/ocamlcomp.sh
+COMPFLAGS=-warn-error A $(INCLUDES)
+LINKFLAGS=-linkall -I $(UNIXDIR)
+CAMLYACC=$(CAML_SRC_PATH)/boot/ocamlyacc
+YACCFLAGS=
+CAMLLEX=$(CAML_SRC_PATH)/boot/ocamlrun $(CAML_SRC_PATH)/boot/ocamllex
+CAMLDEP=$(CAML_SRC_PATH)/boot/ocamlrun $(CAML_SRC_PATH)/tools/ocamldep
+DEPFLAGS=$(INCLUDES)
+
+INCLUDES=\
+  -I $(CAML_SRC_PATH)/utils -I $(CAML_SRC_PATH)/parsing -I $(CAML_SRC_PATH)/typing -I $(CAML_SRC_PATH)/bytecomp -I $(CAML_SRC_PATH)/toplevel \
+  -I $(UNIXDIR)
+
+OTHEROBJS=\
+  $(UNIXDIR)/unix.cma \
+  $(CAML_SRC_PATH)/utils/misc.cmo $(CAML_SRC_PATH)/utils/config.cmo $(CAML_SRC_PATH)/utils/tbl.cmo \
+  $(CAML_SRC_PATH)/utils/clflags.cmo $(CAML_SRC_PATH)/utils/consistbl.cmo $(CAML_SRC_PATH)/utils/warnings.cmo \
+  $(CAML_SRC_PATH)/parsing/location.cmo $(CAML_SRC_PATH)/parsing/longident.cmo \
+  $(CAML_SRC_PATH)/typing/ident.cmo $(CAML_SRC_PATH)/typing/path.cmo $(CAML_SRC_PATH)/typing/types.cmo \
+  $(CAML_SRC_PATH)/typing/btype.cmo $(CAML_SRC_PATH)/typing/primitive.cmo $(CAML_SRC_PATH)/typing/typedtree.cmo \
+  $(CAML_SRC_PATH)/typing/subst.cmo $(CAML_SRC_PATH)/typing/predef.cmo \
+  $(CAML_SRC_PATH)/typing/datarepr.cmo $(CAML_SRC_PATH)/typing/cmi_format.cmo $(CAML_SRC_PATH)/typing/env.cmo $(CAML_SRC_PATH)/typing/oprint.cmo \
+  $(CAML_SRC_PATH)/typing/ctype.cmo $(CAML_SRC_PATH)/typing/printtyp.cmo $(CAML_SRC_PATH)/typing/mtype.cmo \
+  $(CAML_SRC_PATH)/bytecomp/runtimedef.cmo $(CAML_SRC_PATH)/bytecomp/bytesections.cmo \
+  $(CAML_SRC_PATH)/bytecomp/dll.cmo $(CAML_SRC_PATH)/bytecomp/meta.cmo $(CAML_SRC_PATH)/bytecomp/symtable.cmo \
+  $(CAML_SRC_PATH)/bytecomp/opcodes.cmo \
+  $(CAML_SRC_PATH)/toplevel/genprintval.cmo
+
+
+OBJS=\
+	dynlink.cmo \
+	int64ops.cmo \
+	primitives.cmo \
+	unix_tools.cmo \
+	debugger_config.cmo \
+	envaux.cmo \
+	parameters.cmo \
+	lexer.cmo \
+	input_handling.cmo \
+	question.cmo \
+	debugcom.cmo \
+	exec.cmo \
+	source.cmo \
+	pos.cmo \
+	checkpoints.cmo \
+	events.cmo \
+	program_loading.cmo \
+	symbols.cmo \
+	breakpoints.cmo \
+	trap_barrier.cmo \
+	history.cmo \
+	printval.cmo \
+	show_source.cmo \
+	time_travel.cmo \
+	program_management.cmo \
+	frames.cmo \
+	eval.cmo \
+	show_information.cmo \
+	loadprinter.cmo \
+	parser.cmo \
+	command_line.cmo \
+	main.cmo
+
+all: depend ocamldebug$(EXE)
+
+ocamldebug$(EXE): $(OBJS) $(OTHEROBJS)
+	$(CAMLC) $(LINKFLAGS) -o ocamldebug$(EXE) -linkall $(OTHEROBJS) $(OBJS)
+
+install:
+	cp ocamldebug$(EXE) $(BINDIR)/ocamldebug$(EXE)
+
+clean::
+	rm -f ocamldebug$(EXE)
+	rm -f *.cmo *.cmi
+
+.SUFFIXES:
+.SUFFIXES: .ml .cmo .mli .cmi
+
+.ml.cmo:
+	$(CAMLC) -c $(COMPFLAGS) $<
+
+.mli.cmi:
+	$(CAMLC) -c $(COMPFLAGS) $<
+
+depend: beforedepend
+	$(CAMLDEP) $(DEPFLAGS) *.mli *.ml \
+	| sed -e 's,$(UNIXDIR)/,$$(UNIXDIR)/,' > .depend
+
+lexer.ml: lexer.mll
+	$(CAMLLEX) lexer.mll
+clean::
+	rm -f lexer.ml
+beforedepend:: lexer.ml
+
+parser.ml parser.mli: parser.mly
+	$(CAMLYACC) parser.mly
+clean::
+	rm -f parser.ml parser.mli
+beforedepend:: parser.ml parser.mli
+
+dynlink.ml: $(CAML_SRC_PATH)/otherlibs/dynlink/dynlink.ml
+	grep -v 'REMOVE_ME for ../../debugger/dynlink.ml' \
+	     $(CAML_SRC_PATH)/otherlibs/dynlink/dynlink.ml >dynlink.ml
+dynlink.mli: $(CAML_SRC_PATH)/otherlibs/dynlink/dynlink.mli
+	cp $(CAML_SRC_PATH)/otherlibs/dynlink/dynlink.mli .
+clean::
+	rm -f dynlink.ml dynlink.mli
+beforedepend:: dynlink.ml dynlink.mli
+
+-include .depend
