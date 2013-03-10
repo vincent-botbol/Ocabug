@@ -7,5 +7,5 @@ Pour compiler, éditez le src/Makefile et indiquez le chemin vers les sources d'
 
 packages required :
 
-liblablgtk2-gl-ocaml[-dev]
+liblablgtk2-ocaml[-dev]
 liblablgtksourceview2-ocaml[-dev]
