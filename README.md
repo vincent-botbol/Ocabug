@@ -1,6 +1,8 @@
 Ocabug
 ======
 
+TODO: débugger l'interface qui veut pas se lancer avec ./src/ocabug
+
 Visual ocaml debugger
 
 Pour compiler, éditez le src/Makefile et indiquez le chemin vers les sources d'ocaml. Il faut également compiler les sources OCaml avant de pouvoir compiler le déboggueur visuel.
