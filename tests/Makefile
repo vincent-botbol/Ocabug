@@ -1,4 +1,4 @@
-CC=ocamlc -I +lablgtk2 lablgtk.cma lablgtksourceview2.cma
+CC=ocamlc -I +lablgtk2 lablgtk.cma lablgtksourceview2.cma gtkInit.cmo
 
 all: ui_starter
 

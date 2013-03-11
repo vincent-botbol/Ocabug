@@ -1,10 +1,17 @@
-let window () =   
+open Unix
+
+let window =   
   let w = GWindow.window 
     ~title:"OCabug"
     ~width:800
     () in 
-  ignore(w#connect#destroy ~callback:GMain.Main.quit);
+  ignore(w#connect#destroy ~callback:GMain.Main.quit); 
   w
+
+let (fd_in, fd_out) = pipe ()
+let (ui_in, ui_out) = 
+  Unix.in_channel_of_descr fd_in, 
+  Unix.out_channel_of_descr fd_out
 
 (*
   vbox => Text + input
@@ -19,13 +26,18 @@ object (self)
   method pack () =
     let vbox = GPack.vbox ~packing:pack_loc#add () in
     ignore(GText.view ~packing:vbox#add ~height:200 ~editable:false ~buffer:buffer ~cursor_visible:false ());
+    ignore(Thread.create (fun () -> while true do 
+	let str = input_line ui_in in 
+	buffer#set_text ((buffer#get_text ())^"\n"^str)
+      done)());
     ignore(GMisc.separator `HORIZONTAL ~packing:vbox#add ());
-    ignore(GEdit.entry ~text:"" ~packing:vbox#add ~editable:true ())
-
+    let entry = GEdit.entry ~text:"" ~packing:vbox#add ~editable:true () in
+    let button = GButton.button ~label:"envoi" ~packing:vbox#add () in
+    let send_info () = Printf.fprintf ui_out "%s\n%!" entry#text in
+    button#connect#clicked ~callback:(send_info)
 end
 
   
-
 let vbox = GPack.vbox ~packing:window#add ()
 
 (********************** 

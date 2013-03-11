@@ -26,8 +26,6 @@ open Show_information
 open Format
 open Primitives
 
-let () = Ui_starter.show_ui ()
-
 let line_buffer = Lexing.from_function read_user_input
 
 let rec loop ppf =
@@ -114,7 +112,7 @@ let execute_file_if_any () =
   let buffer = Buffer.create 128 in
   begin
     try
-      let base = ".ocamldebug" in
+      let base = ".ocabug" in
       let file =
         if Sys.file_exists base then
           base
@@ -200,7 +198,7 @@ let main () =
       Arg.parse speclist anonymous "";
       Arg.usage speclist
         "No program name specified\n\
-         Usage: ocamldebug [options] <program> [arguments]\n\
+         Usage: ocabug [options] <program> [arguments]\n\
          Options are:";
       exit 2
     with Found_program_name ->
@@ -208,7 +206,7 @@ let main () =
         arguments := !arguments ^ " " ^ (Filename.quote Sys.argv.(j))
       done
     end;
-    printf "\tObjective Caml Debugger version %s@.@." Config.version;
+    printf "\tObjective Caml VISUAL Debugger version 0.9.";
     Config.load_path := !default_load_path;
     Clflags.recursive_types := true;    (* Allow recursive types. *)
     toplevel_loop ();                   (* Toplevel. *)
@@ -225,3 +223,5 @@ let main () =
 
 let _ =
   Printexc.catch (Unix.handle_unix_error main) ()
+
+let () = Ui_starter.show_ui ()

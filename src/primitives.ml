@@ -131,8 +131,11 @@ let close_io io_channel =
   close_in_noerr io_channel.io_in;
 ;;
 
+open Ui_starter
+
 let std_io = {
-  io_in = stdin;
-  io_out = stdout;
-  io_fd = Unix.stdin
+  io_in = ui_in; (* Entrée par le GEntry *)
+  io_out = ui_out;  (* Sortie sur le GText *)
+  io_fd = fd_in
   }
+

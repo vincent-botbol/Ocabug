@@ -12,6 +12,6 @@
 
 # $Id: Makefile 8955 2008-07-29 08:31:41Z xleroy $
 
-CAML_SRC_PATH=~/PSTL/ocaml_src
+CAML_SRC_PATH=/home/mathieu/Boulot/PSTL/ocaml-3.12.1
 UNIXDIR=$(CAML_SRC_PATH)/otherlibs/unix
 include Makefile.shared
