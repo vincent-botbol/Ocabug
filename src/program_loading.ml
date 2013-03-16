@@ -142,5 +142,6 @@ let _ =
 
 (*** Connection. ***)
 
+(* CHANGE *)
 let connection = ref Primitives.std_io
 let connection_opened = ref false

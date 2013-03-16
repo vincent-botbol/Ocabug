@@ -12,16 +12,26 @@ let window =
 
   Pour l'input => complétion ça peut être cool
 *)
+
+
 class command_invite pack_loc =
 object (self)
   
   val buffer = GText.buffer ~text:"<ocamldebug output>" ()
 
+  method send entry () =
+    Commande_line.interprete_line std_formatter entry#text;
+    Printf.printf "Msg sent\n%!";
+    entry#set_text ""
+
   method pack () =
     let vbox = GPack.vbox ~packing:pack_loc#add () in
     ignore(GText.view ~packing:vbox#add ~height:200 ~editable:false ~buffer:buffer ~cursor_visible:false ());
     ignore(GMisc.separator `HORIZONTAL ~packing:vbox#add ());
-    ignore(GEdit.entry ~text:"" ~packing:vbox#add ~editable:true ())
+    let entry = GEdit.entry ~text:"" ~packing:vbox#add ~editable:true () in
+    let button = GButton.button ~label:"SEND" ~packing:vbox#add () in
+    button#connect#clicked ~callback:(self#send entry)
+    
 
 end
 
@@ -77,12 +87,14 @@ let () = ignore(GMisc.separator `HORIZONTAL ~packing:vbox#add ())
 let invite = (new command_invite vbox)#pack ()
 
 let show_ui () =
-  load_source_file "test.ml";
+  (*Unix.connect Socket_config.debugger_socket (Unix.ADDR_UNIX Socket_config.ocabug_socket_name);*)
+  load_source_file "../mathieu/test.ml";
   window#show ();
   GMain.Main.main ()
 
+(*
 let () = show_ui ()
-
+*)
 (*let load_file this buffer =
   let path = (match this#filename with Some s -> s 
     | _ -> raise Exit) in

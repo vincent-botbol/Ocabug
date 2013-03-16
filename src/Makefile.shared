@@ -23,12 +23,14 @@ CAMLLEX=$(CAML_SRC_PATH)/boot/ocamlrun $(CAML_SRC_PATH)/boot/ocamllex
 CAMLDEP=$(CAML_SRC_PATH)/boot/ocamlrun $(CAML_SRC_PATH)/tools/ocamldep
 DEPFLAGS=$(INCLUDES)
 
+LIBDIR=/usr/lib/ocaml
+
 INCLUDES=\
   -I $(CAML_SRC_PATH)/utils -I $(CAML_SRC_PATH)/parsing -I $(CAML_SRC_PATH)/typing -I $(CAML_SRC_PATH)/bytecomp -I $(CAML_SRC_PATH)/toplevel \
-  -I $(UNIXDIR) 
+  -I $(UNIXDIR) -I ../tests -I +lablgtk2
 
 OTHEROBJS=\
-  $(UNIXDIR)/unix.cma $(UNIXDIR)/../threads/threads.cma \
+  $(LIBDIR)/unix.cma $(LIBDIR)/threads/threads.cma \
   $(CAML_SRC_PATH)/utils/misc.cmo $(CAML_SRC_PATH)/utils/config.cmo \
   $(CAML_SRC_PATH)/utils/tbl.cmo $(CAML_SRC_PATH)/utils/clflags.cmo $(CAML_SRC_PATH)/utils/consistbl.cmo \
   $(CAML_SRC_PATH)/parsing/longident.cmo \
@@ -44,7 +46,6 @@ OTHEROBJS=\
 
 
 OBJS=\
-	ui_starter.cmo \
 	dynlink.cmo \
 	int64ops.cmo \
 	primitives.cmo \
@@ -76,13 +77,14 @@ OBJS=\
 	loadprinter.cmo \
 	parser.cmo \
 	command_line.cmo \
+	ui_starter.cmo \
 	main.cmo
 
 all: ocabug$(EXE)
 
 ocabug$(EXE): $(OBJS) $(OTHEROBJS)
 	$(CAMLC) -I +lablgtk2 lablgtk.cma lablgtksourceview2.cma gtkInit.cmo $(LINKFLAGS) \
-	-o ocabug$(EXE) -linkall $(OTHEROBJS) $(OBJS)
+	-o ../bin/ocabug$(EXE) -linkall $(OTHEROBJS) $(OBJS)
 
 install:
 	cp ocabug$(EXE) $(BINDIR)/ocabug$(EXE)
@@ -104,6 +106,7 @@ clean::
 ui_starter.cmo:ui_starter.ml
 	$(CAMLC) $(LINKFLAGS) -I +lablgtk2 \
 	 -c -linkall $(OTHEROBJS) $(OBJS) $<
+
 ####
 
 depend: beforedepend

@@ -209,6 +209,10 @@ let main () =
     printf "\tObjective Caml VISUAL Debugger version 0.9.";
     Config.load_path := !default_load_path;
     Clflags.recursive_types := true;    (* Allow recursive types. *)
+    (* CHANGE : connect *)
+    (*Unix.connect Socket_config.debugger_socket
+      (Unix.ADDR_UNIX Socket_config.ocabug_socket_name);*)
+    (* END CHANGE *)
     toplevel_loop ();                   (* Toplevel. *)
     kill_program ();
     exit 0
@@ -222,6 +226,5 @@ let main () =
       exit 2
 
 let _ =
+  ignore (Thread.create Ui_starter.show_ui ());
   Printexc.catch (Unix.handle_unix_error main) ()
-
-let () = Ui_starter.show_ui ()

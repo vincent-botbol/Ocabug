@@ -212,7 +212,8 @@ main.cmo: unix_tools.cmi \
     frames.cmi exec.cmi /home/mathieu/Boulot/PSTL/ocaml-3.12.1/typing/env.cmi \
     debugger_config.cmi \
     /home/mathieu/Boulot/PSTL/ocaml-3.12.1/utils/config.cmi command_line.cmi \
-    /home/mathieu/Boulot/PSTL/ocaml-3.12.1/utils/clflags.cmi checkpoints.cmi
+    /home/mathieu/Boulot/PSTL/ocaml-3.12.1/utils/clflags.cmi checkpoints.cmi \
+    ui_starter.cmo
 main.cmx: unix_tools.cmx \
     $(UNIXDIR)/unix.cmx \
     ui_starter.cmx time_travel.cmx show_information.cmx question.cmx \

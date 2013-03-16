@@ -128,14 +128,24 @@ let io_channel_of_descr fd = {
 
 let close_io io_channel =
   close_out_noerr io_channel.io_out;
-  close_in_noerr io_channel.io_in;
-;;
+  close_in_noerr io_channel.io_in
 
-open Ui_starter
 
 let std_io = {
-  io_in = ui_in; (* Entrée par le GEntry *)
-  io_out = ui_out;  (* Sortie sur le GText *)
-  io_fd = fd_in
+  io_in = Unix.in_channel_of_descr Unix.stdin; (* Entrée par le GEntry *)
+  io_out = Unix.out_channel_of_descr Unix.stdout;  (* Sortie sur le GText *)
+  io_fd = Unix.stdin
   }
+
+
+(* CHANGE *)
+
+open Socket_config
+(*
+let ocabug_io = {
+  io_in = Unix.in_channel_of_descr Socket_config.debugger_socket;
+  io_out = Unix.out_channel_of_descr Socket_config.ocabug_socket;
+  io_fd = Socket_config.ocabug_socket
+}
+*)
 
