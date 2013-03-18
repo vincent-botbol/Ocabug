@@ -148,7 +148,7 @@ let ensure_loaded () =
         prerr_endline "Waiting for connection...";
       main_loop ();
       loaded := true;
-      prerr_endline "done."
+      prerr_endline "done.";
     with
       x ->
         kill_program();

@@ -30,7 +30,7 @@ let line_buffer = Lexing.from_function read_user_input
 
 let rec loop ppf =
   line_loop ppf line_buffer;
-  if !loaded && (not (yes_or_no "The program is running. Quit anyway")) then
+   if !loaded && (not (yes_or_no "The program is running. Quit anyway")) then
     loop ppf
 
 let current_duration = ref (-1L)
@@ -213,6 +213,11 @@ let main () =
     (*Unix.connect Socket_config.debugger_socket
       (Unix.ADDR_UNIX Socket_config.ocabug_socket_name);*)
     (* END CHANGE *)
+
+    print_endline "LAAAAAAAAAAAA";
+    Symbols.read_symbols Sys.argv.(1);
+    Ui_starter.load_modules_combo Symbols.modules;
+
     toplevel_loop ();                   (* Toplevel. *)
     kill_program ();
     exit 0
@@ -227,4 +232,5 @@ let main () =
 
 let _ =
   ignore (Thread.create Ui_starter.show_ui ());
+  ignore (Thread.create Ocabug_misc.write_answers ());
   Printexc.catch (Unix.handle_unix_error main) ()

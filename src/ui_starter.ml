@@ -3,7 +3,7 @@ let window =
     ~title:"OCabug"
     ~width:800
     () in 
-  ignore(w#connect#destroy ~callback:GMain.Main.quit);
+  ignore(w#connect#destroy ~callback:(fun () -> GMain.Main.quit (); exit 0));
   w
 
 
@@ -13,20 +13,30 @@ let window =
   Pour l'input => complétion ça peut être cool
 *)
 
+exception Commande_invite
 
 class command_invite pack_loc =
 object (self)
-  
+
   val buffer = GText.buffer ~text:"<ocamldebug output>" ()
 
+  method write_buffer str = buffer#insert (str^"\n")
+
   method send entry () =
-    Command_line.interprete_line Format.std_formatter entry#text;
-    Printf.printf "Msg sent\n%!";
-    entry#set_text ""
+    if (Command_line.interprete_line Socket_config.formatter entry#text) then
+      begin
+	Printf.printf "Msg sent\n%!";
+	entry#set_text ""
+      end
+    else
+      raise Commande_invite
 
   method pack () =
     let vbox = GPack.vbox ~packing:pack_loc#add () in
-    ignore(GText.view ~packing:vbox#add ~height:200 ~editable:false ~buffer:buffer ~cursor_visible:false ());
+    let sw = GBin.scrolled_window ~packing:vbox#add 
+		    ~hpolicy:`AUTOMATIC ~vpolicy:`AUTOMATIC ()
+    in
+    ignore(GText.view ~packing:sw#add ~height:200 ~editable:false ~buffer:buffer ~cursor_visible:false ());
     ignore(GMisc.separator `HORIZONTAL ~packing:vbox#add ());
     let entry = GEdit.entry ~text:"" ~packing:vbox#add ~editable:true () in
     let button = GButton.button ~label:"SEND" ~packing:vbox#add () in
@@ -69,7 +79,7 @@ let source_box = let sw = GBin.scrolled_window ~packing:vbox#add
 		 
 let load_source_file filename =
   let text =
-    let ic = open_in "ui_starter.ml" in
+    let ic = open_in filename in
     let size = in_channel_length ic in
     let buf = String.create size in
     really_input ic buf 0 size;
@@ -84,11 +94,33 @@ END SOURCE
 
 
 let () = ignore(GMisc.separator `HORIZONTAL ~packing:vbox#add ())
-let invite = (new command_invite vbox)#pack ()
+let invite =
+  let cmd_inv = new command_invite vbox in
+  ignore (cmd_inv#pack ());
+  cmd_inv
+
+let make_arrow_label combo ~label ~string =
+  let item = GList.list_item () in (* no packing here, it blocks GTK *)
+  let hbox = GPack.hbox ~spacing:3 ~packing:item#add () in
+  ignore(GMisc.arrow ~kind:`RIGHT ~shadow:`OUT ~packing:hbox#pack ());
+  ignore(GMisc.label ~text:label ~packing:hbox#pack ());
+  combo#set_item_string item string;
+  combo#list#add item;
+  item
+
+
+let combo = GEdit.combo ~packing:vbox#add ()
+
+let load_modules_combo modules = 
+  (* Load les events *)
+  List.iter (fun mod_item -> make_arrow_label combo ~label:mod_item ~string:mod_item; ())
+    !modules;
+  print_endline "test";
+  ()
 
 let show_ui () =
   (*Unix.connect Socket_config.debugger_socket (Unix.ADDR_UNIX Socket_config.ocabug_socket_name);*)
-  load_source_file "../mathieu/test.ml";
+  (*load_source_file "../mathieu/test.ml";*)
   window#show ();
   GMain.Main.main ()
 
