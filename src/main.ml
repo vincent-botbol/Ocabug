@@ -108,6 +108,80 @@ let rec protect ppf restart loop =
       kill_program ();
       raise x
 
+let rec my_protect ppf restart loop =
+  try
+    loop ()
+  with
+  | End_of_file ->
+      my_protect ppf restart (function () ->
+        forget_process
+          !current_checkpoint.c_fd
+          !current_checkpoint.c_pid;
+        pp_print_flush ppf ();
+        stop_user_input ();
+        restart ())
+  | Toplevel ->
+      my_protect ppf restart (function () ->
+	printf "Toplevel exception handled\n%!";
+        pp_print_flush ppf ();
+        stop_user_input ();
+        restart ())
+  | Sys.Break ->
+      my_protect ppf restart (function () ->
+        fprintf ppf "Interrupted.@.";
+        Exec.protect (function () ->
+          stop_user_input ();
+          if !loaded then begin
+            try_select_frame 0;
+            show_current_event ppf;
+          end);
+        restart ())
+  | Current_checkpoint_lost ->
+      my_protect ppf restart (function () ->
+        fprintf ppf "Trying to recover...@.";
+        stop_user_input ();
+        recover ();
+        try_select_frame 0;
+        show_current_event ppf;
+        restart ())
+  | Current_checkpoint_lost_start_at (time, init_duration) ->
+      my_protect ppf restart (function () ->
+        let b =
+          if !current_duration = -1L then begin
+            let msg = sprintf "Restart from time %Ld and try to get closer of the problem" time in
+            stop_user_input ();
+            if yes_or_no msg then
+              (current_duration := init_duration; true)
+            else
+              false
+            end
+          else
+            true in
+        if b then
+          begin
+            go_to time;
+            current_duration := Int64.div !current_duration 10L;
+            if !current_duration > 0L then
+              while true do
+                step !current_duration
+              done
+            else begin
+              current_duration := -1L;
+              stop_user_input ();
+              show_current_event ppf;
+              restart ();
+            end
+          end
+        else
+          begin
+            recover ();
+            show_current_event ppf;
+            restart ()
+          end)
+  | x ->
+      kill_program ();
+      raise x
+
 let execute_file_if_any () =
   let buffer = Buffer.create 128 in
   begin
@@ -206,21 +280,23 @@ let main () =
         arguments := !arguments ^ " " ^ (Filename.quote Sys.argv.(j))
       done
     end;
-    printf "\tObjective Caml VISUAL Debugger version 0.9.";
+    printf "\tObjective Caml VISUAL Debugger version 0.9.\n%!";
     Config.load_path := !default_load_path;
     Clflags.recursive_types := true;    (* Allow recursive types. *)
+
+    Format.set_formatter_out_channel Socket_config.outchan;
+    my_protect Socket_config.formatter Ui_starter.show_ui Ui_starter.show_ui
+
     (* CHANGE : connect *)
     (*Unix.connect Socket_config.debugger_socket
       (Unix.ADDR_UNIX Socket_config.ocabug_socket_name);*)
     (* END CHANGE *)
-
-    print_endline "LAAAAAAAAAAAA";
-    Symbols.read_symbols Sys.argv.(1);
+    (*
     Ui_starter.load_modules_combo Symbols.modules;
-
-    toplevel_loop ();                   (* Toplevel. *)
+    *)
+    (*toplevel_loop ();                   (* Toplevel. *)
     kill_program ();
-    exit 0
+    exit 0*)
   with
     Toplevel ->
       exit 2
@@ -231,6 +307,4 @@ let main () =
       exit 2
 
 let _ =
-  ignore (Thread.create Ui_starter.show_ui ());
-  ignore (Thread.create Ocabug_misc.write_answers ());
   Printexc.catch (Unix.handle_unix_error main) ()

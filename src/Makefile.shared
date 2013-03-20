@@ -27,7 +27,7 @@ LIBDIR=/usr/lib/ocaml
 
 INCLUDES=\
   -I $(CAML_SRC_PATH)/utils -I $(CAML_SRC_PATH)/parsing -I $(CAML_SRC_PATH)/typing -I $(CAML_SRC_PATH)/bytecomp -I $(CAML_SRC_PATH)/toplevel \
-  -I $(UNIXDIR) -I ../tests -I +lablgtk2
+  -I $(UNIXDIR) -I ../tests -I +lablgtk2 -I $(LIBDIR)
 
 OTHEROBJS=\
   $(LIBDIR)/unix.cma $(LIBDIR)/threads/threads.cma \
@@ -77,9 +77,9 @@ OBJS=\
 	loadprinter.cmo \
 	parser.cmo \
 	command_line.cmo \
+	ocabug_misc.cmo \
 	socket_config.cmo \
 	ui_starter.cmo \
-	ocabug_misc.cmo \
 	main.cmo
 
 all: ocabug$(EXE)

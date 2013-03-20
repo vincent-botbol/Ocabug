@@ -36,10 +36,11 @@ let show_current_event ppf =
   match current_report ()  with
   | None ->
       fprintf ppf "@.Beginning of program.@.";
-      show_no_point ()
+      show_no_point ppf
   | Some {rep_type = (Event | Breakpoint); rep_program_pointer = pc} ->
         let ev = get_current_event () in
-        fprintf ppf " - module %s@." ev.ev_module;
+        fprintf ppf " - module %s - file %s@."
+	  ev.ev_module ev.ev_loc.Location.loc_start.Lexing.pos_fname;
         (match breakpoints_at_pc pc with
          | [] ->
              ()
@@ -51,16 +52,18 @@ let show_current_event ppf =
                List.iter
                 (function x -> fprintf ppf "%i " x) l)
              (List.sort compare breakpoints));
-        show_point ev true
+        show_point ppf ev true
   | Some {rep_type = Exited} ->
-      fprintf ppf "@.Program exit.@.";
-      show_no_point ()
+    fprintf ppf "@.Program exit.@.";
+      show_no_point ppf
   | Some {rep_type = Uncaught_exc} ->
-      fprintf ppf
-        "@.Program end.@.\
+    printf "AVANT";
+    fprintf ppf
+      "@.Program end.@.\
          @[Uncaught exception:@ %a@]@."
       Printval.print_exception (Debugcom.Remote_value.accu ());
-      show_no_point ()
+    printf "APRES";
+    show_no_point ppf
   | Some {rep_type = Trap_barrier} ->
                                         (* Trap_barrier not visible outside *)
                                         (* of module `time_travel'. *)
@@ -97,4 +100,4 @@ let show_current_frame ppf selected =
             List.iter (function x -> fprintf ppf "%i " x) l)
           (List.sort compare breakpoints);
       end;
-      show_point sel_ev selected
+      show_point ppf sel_ev selected

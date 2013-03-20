@@ -1,3 +1,5 @@
+open Ocabug_misc
+
 let window =   
   let w = GWindow.window 
     ~title:"OCabug"
@@ -18,18 +20,26 @@ exception Commande_invite
 class command_invite pack_loc =
 object (self)
 
-  val buffer = GText.buffer ~text:"<ocamldebug output>" ()
+  val end_response = '\003'
+
+  val buffer = GText.buffer ~text:"<ocamldebug output>\n" ()
 
   method write_buffer str = buffer#insert (str^"\n")
 
   method send entry () =
-    if (Command_line.interprete_line Socket_config.formatter entry#text) then
-      begin
-	Printf.printf "Msg sent\n%!";
-	entry#set_text ""
-      end
-    else
-      raise Commande_invite
+    Printf.printf "Msg sent\n";
+    begin
+      try
+	ignore (Command_line.interprete_line Format.std_formatter entry#text);
+      with
+	| Command_line.Ocabug_exn -> Printf.printf "Ocabug exn caught\n%!"
+	| Debugger_config.Toplevel -> Printf.printf "Toplevel exn caught\n%!"
+    end;
+    Printf.fprintf Socket_config.outchan "%c" '\003';
+    entry#set_text "";
+    flush Socket_config.outchan;
+      (* 2 lectures pour *)
+    self#write_buffer (my_input_line Socket_config.pipe_in)
 
   method pack () =
     let vbox = GPack.vbox ~packing:pack_loc#add () in
@@ -99,6 +109,9 @@ let invite =
   ignore (cmd_inv#pack ());
   cmd_inv
 
+let write str =
+  invite#write_buffer str
+
 let make_arrow_label combo ~label ~string =
   let item = GList.list_item () in (* no packing here, it blocks GTK *)
   let hbox = GPack.hbox ~spacing:3 ~packing:item#add () in
@@ -110,17 +123,22 @@ let make_arrow_label combo ~label ~string =
 
 
 let combo = GEdit.combo ~packing:vbox#add ()
-
+(*
 let load_modules_combo modules = 
   (* Load les events *)
   List.iter (fun mod_item -> make_arrow_label combo ~label:mod_item ~string:mod_item; ())
     !modules;
   print_endline "test";
   ()
-
+*)
 let show_ui () =
   (*Unix.connect Socket_config.debugger_socket (Unix.ADDR_UNIX Socket_config.ocabug_socket_name);*)
-  (*load_source_file "../mathieu/test.ml";*)
+  Printf.printf "%s\n%!" !Parameters.program_name;
+  let suffixed_name = !Parameters.program_name^".ml" in
+  if Sys.file_exists suffixed_name then
+    load_source_file suffixed_name
+  else
+    Printf.printf "File not found : %s\n%!" suffixed_name;
   window#show ();
   GMain.Main.main ()
 

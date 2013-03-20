@@ -71,10 +71,12 @@ type dbg_info =
 
 let info_list = ref ([] : dbg_info list)
 
+exception Ocabug_exn
+
 (** Utilities. **)
 let error text =
   eprintf "%s@." text;
-  raise Toplevel
+  raise Ocabug_exn
 
 let check_not_windows feature =
   match Sys.os_type with
@@ -264,7 +266,7 @@ let instr_kill ppf lexbuf =
   if not !loaded then error "The program is not being run.";
   if (yes_or_no "Kill the program being debugged") then begin
     kill_program ();
-    show_no_point()
+    show_no_point ppf
   end
 
 let instr_run ppf lexbuf =
@@ -740,10 +742,10 @@ let instr_list ppf lexbuf =
             | Some x -> x
           in
             if mdle = curr_mod then
-              show_listing pos mdle beginning en point
+              show_listing ppf pos mdle beginning en point
                 (current_event_is_before ())
             else
-              show_listing pos mdle beginning en (-1) true
+              show_listing ppf pos mdle beginning en (-1) true
 
 (** Variables. **)
 let raw_variable kill name =

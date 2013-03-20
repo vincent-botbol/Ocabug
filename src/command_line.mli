@@ -18,5 +18,6 @@
 open Lexing;;
 open Format;;
 
+exception Ocabug_exn
 val interprete_line : formatter -> string -> bool;;
 val line_loop : formatter -> lexbuf -> unit;;
