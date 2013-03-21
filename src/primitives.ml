@@ -138,9 +138,14 @@ let std_io = {
   }
 
 
+
 (* CHANGE *)
 
 open Socket_config
+
+let printing_function str =
+  Printf.fprintf outchan "%s%!" str
+
 (*
 let ocabug_io = {
   io_in = Unix.in_channel_of_descr Socket_config.debugger_socket;

@@ -80,7 +80,3 @@ let make_checkpoints = ref
   (match Sys.os_type with
     "Win32" -> false
   | _ -> true)
-(*
-(* Printing function, either on stdout or on ocabug *)
-let printing_function = Ui_starter.write
-*)

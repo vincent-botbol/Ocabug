@@ -34,7 +34,3 @@ val checkpoint_small_step : int64 ref
 val checkpoint_max_count : int ref
 val make_checkpoints : bool ref
 
-(*
-(*** Printing function, OCABUG ***)
-val printing_function : string -> unit
-*)

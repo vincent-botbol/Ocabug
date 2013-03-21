@@ -46,6 +46,7 @@ OTHEROBJS=\
 
 
 OBJS=\
+	socket_config.cmo \
 	dynlink.cmo \
 	int64ops.cmo \
 	primitives.cmo \
@@ -78,7 +79,6 @@ OBJS=\
 	parser.cmo \
 	command_line.cmo \
 	ocabug_misc.cmo \
-	socket_config.cmo \
 	ui_starter.cmo \
 	main.cmo
 

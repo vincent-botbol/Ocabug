@@ -66,3 +66,6 @@ val std_io : io_channel
 (*
 val ocabug_io : io_channel
 *)
+
+(* ocabug printing_function *)
+val printing_function : string -> unit

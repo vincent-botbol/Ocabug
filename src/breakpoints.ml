@@ -78,28 +78,24 @@ let breakpoint_at_pc pc =
 (* Remove all breakpoints. *)
 let remove_breakpoints pos =
   if !debug_breakpoints then
-    (print_string "Removing breakpoints..."; print_newline ());
+    printing_function "Removing breakpoints...\n";
   List.iter
     (function (pos, _) ->
-       if !debug_breakpoints then begin
-         print_int pos;
-         print_newline()
-       end;
-       reset_instr pos;
-       Symbols.set_event_at_pc pos)
+      if !debug_breakpoints then
+        printing_function (sprintf "%d\n" pos);
+      reset_instr pos;
+      Symbols.set_event_at_pc pos)
     pos
-
+    
 (* Set all breakpoints. *)
 let set_breakpoints pos =
   if !debug_breakpoints then
-    (print_string "Setting breakpoints..."; print_newline ());
+    printing_function "Setting breakpoints...\n";
   List.iter
     (function (pos, _) ->
-       if !debug_breakpoints then begin
-         print_int pos;
-         print_newline()
-       end;
-       set_breakpoint pos)
+      if !debug_breakpoints then
+	printing_function (sprintf "%d\n" pos);
+      set_breakpoint pos)
     pos
 
 (* Ensure the current version in installed in current checkpoint. *)
@@ -166,12 +162,12 @@ let rec new_breakpoint =
   | event ->
       Exec.protect
         (function () ->
-           incr breakpoint_number;
-           insert_position event.ev_pos;
-           breakpoints := (!breakpoint_number, event) :: !breakpoints);
-      printf "Breakpoint %d at %d : %s" !breakpoint_number event.ev_pos
-             (Pos.get_desc event);
-      print_newline ()
+          incr breakpoint_number;
+          insert_position event.ev_pos;
+          breakpoints := (!breakpoint_number, event) :: !breakpoints);
+    printing_function
+      (sprintf "Breakpoint %d at %d : %s\n" !breakpoint_number event.ev_pos
+	 (Pos.get_desc event))
 
 (* Remove a breakpoint from lists. *)
 let remove_breakpoint number =
@@ -180,11 +176,11 @@ let remove_breakpoint number =
     let pos = ev.ev_pos in
       Exec.protect
         (function () ->
-           breakpoints := List.remove_assoc number !breakpoints;
-           remove_position pos;
-           printf "Removed breakpoint %d at %d : %s" number ev.ev_pos
-                  (Pos.get_desc ev);
-           print_newline ()
+          breakpoints := List.remove_assoc number !breakpoints;
+          remove_position pos;
+          printing_function 
+	    (sprintf "Removed breakpoint %d at %d : %s" number ev.ev_pos
+               (Pos.get_desc ev))
         )
   with
     Not_found ->

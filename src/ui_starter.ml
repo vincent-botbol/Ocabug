@@ -24,7 +24,7 @@ object (self)
 
   val buffer = GText.buffer ~text:"<ocamldebug output>\n" ()
 
-  method write_buffer str = buffer#insert (str^"\n")
+  method write_buffer str = buffer#insert str
 
   method send entry () =
     Printf.printf "Msg sent\n";
@@ -32,14 +32,16 @@ object (self)
       try
 	ignore (Command_line.interprete_line Format.std_formatter entry#text);
       with
-	| Command_line.Ocabug_exn -> Printf.printf "Ocabug exn caught\n%!"
+	| Command_line.Command_line -> Printf.printf "command line exn caught\n%!"
 	| Debugger_config.Toplevel -> Printf.printf "Toplevel exn caught\n%!"
     end;
+    (* to know when to stop reading *)
     Printf.fprintf Socket_config.outchan "%c" '\003';
     entry#set_text "";
     flush Socket_config.outchan;
-      (* 2 lectures pour *)
-    self#write_buffer (my_input_line Socket_config.pipe_in)
+    let answer = my_input_line Socket_config.pipe_in in
+    if answer <> "" then
+      self#write_buffer (answer^"\n")
 
   method pack () =
     let vbox = GPack.vbox ~packing:pack_loc#add () in
@@ -123,14 +125,14 @@ let make_arrow_label combo ~label ~string =
 
 
 let combo = GEdit.combo ~packing:vbox#add ()
-(*
+
 let load_modules_combo modules = 
   (* Load les events *)
   List.iter (fun mod_item -> make_arrow_label combo ~label:mod_item ~string:mod_item; ())
-    !modules;
+    modules;
   print_endline "test";
   ()
-*)
+
 let show_ui () =
   (*Unix.connect Socket_config.debugger_socket (Unix.ADDR_UNIX Socket_config.ocabug_socket_name);*)
   Printf.printf "%s\n%!" !Parameters.program_name;
@@ -139,6 +141,8 @@ let show_ui () =
     load_source_file suffixed_name
   else
     Printf.printf "File not found : %s\n%!" suffixed_name;
+  Program_management.ensure_loaded ();
+  load_modules_combo !Symbols.modules;
   window#show ();
   GMain.Main.main ()
 

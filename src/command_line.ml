@@ -71,12 +71,12 @@ type dbg_info =
 
 let info_list = ref ([] : dbg_info list)
 
-exception Ocabug_exn
+exception Command_line
 
 (** Utilities. **)
 let error text =
   eprintf "%s@." text;
-  raise Ocabug_exn
+  raise Command_line
 
 let check_not_windows feature =
   match Sys.os_type with
@@ -294,6 +294,26 @@ let instr_step ppf lexbuf =
     reset_named_values();
     step step_count;
     show_current_event ppf
+
+let instr_stepmodule ppf lexbuf =
+  eol lexbuf;
+  ensure_loaded ();
+  reset_named_values();
+  let ev = ref (get_current_event ()) in
+  let cont = ref true in
+  while !cont do
+    step _1;
+    match !current_checkpoint.c_report with
+      | None -> printing_function "No report type after step\n"
+      | Some {rep_type=Event} ->
+	update_current_event ();
+	let new_ev = get_current_event() in
+	printf "Old mod : %s | New mod %s | same? : %B\n" !ev.ev_module new_ev.ev_module (new_ev.ev_module = !ev.ev_module);
+	if new_ev.ev_module = !ev.ev_module then
+	  cont := false
+      | _ -> printing_function "Report type different from Event";cont:=false
+  done;
+  show_current_event ppf
 
 let instr_back ppf lexbuf =
   let step_count =
@@ -1067,8 +1087,14 @@ The code for the function must have previously been loaded in the debugger\n\
 using \"load_printer\"." };
      { instr_name = "remove_printer"; instr_prio = false;
        instr_action = instr_remove_printer; instr_repeat = false; instr_help =
-"stop using the given function for printing values of its input type." }
-];
+"stop using the given function for printing values of its input type." };
+  (* OCABUG commands *)
+     { instr_name = "ocastep"; instr_prio = true;
+       instr_action = instr_stepmodule; instr_repeat = true; instr_help =
+"go to next event in the same module"};
+	 
+  ];
+  
   variable_list := [
     (* variable name, (writing, reading), help reading, help writing *)
      { var_name = "arguments";
