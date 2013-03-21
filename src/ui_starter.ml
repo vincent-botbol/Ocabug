@@ -22,12 +22,16 @@ object (self)
 
   val end_response = '\003'
 
-  val buffer = GText.buffer ~text:"<ocamldebug output>\n" ()
+  val buffer = GText.buffer ~text:"[OCabug]\n" ()
+  val sw = GBin.scrolled_window ~packing:pack_loc#add 
+    ~hpolicy:`AUTOMATIC ~vpolicy:`AUTOMATIC () 
+
+  val last_command = ref ""
 
   method write_buffer str = buffer#insert str
 
   method send entry () =
-    Printf.printf "Msg sent\n";
+    Printf.printf "[DEBUG] Msg sent\n";
     begin
       try
 	ignore (Command_line.interprete_line Format.std_formatter entry#text);
@@ -37,23 +41,43 @@ object (self)
     end;
     (* to know when to stop reading *)
     Printf.fprintf Socket_config.outchan "%c" '\003';
-    entry#set_text "";
+    last_command := entry#text; entry#set_text "";
     flush Socket_config.outchan;
     let answer = my_input_line Socket_config.pipe_in in
     if answer <> "" then
-      self#write_buffer (answer^"\n")
+      self#write_buffer answer;
+    (* TODO : Parse de l'event pour se positionner dans le source *)
+    
+    (* Suivi automatique du scrolling *)
+    let adj = sw#vadjustment in
+    adj#set_value (adj#upper -. adj#page_size)
+    
+
+  method private key_callback entry key =
+    let value = GdkEvent.Key.keyval key in
+    if value = 65421 || value = 65293 then 
+      begin self#send entry (); false; end
+      (* up = 65362 | down = 65364 *)	
+    else if value = 65362 then
+      begin
+	entry#set_text !last_command;
+	entry#set_position (String.length !last_command);
+	true; 
+      end
+    else if value = 65364 then
+      true
+    else 
+      false
 
   method pack () =
-    let vbox = GPack.vbox ~packing:pack_loc#add () in
-    let sw = GBin.scrolled_window ~packing:vbox#add 
-		    ~hpolicy:`AUTOMATIC ~vpolicy:`AUTOMATIC ()
-    in
     ignore(GText.view ~packing:sw#add ~height:200 ~editable:false ~buffer:buffer ~cursor_visible:false ());
-    ignore(GMisc.separator `HORIZONTAL ~packing:vbox#add ());
-    let entry = GEdit.entry ~text:"" ~packing:vbox#add ~editable:true () in
-    let button = GButton.button ~label:"SEND" ~packing:vbox#add () in
+    let hbox = GPack.hbox ~packing:pack_loc#add () in
+    let entry = GEdit.entry ~text:"" ~packing:hbox#add ~editable:true ~width:700 () 
+    and button = GButton.button ~label:"SEND" ~packing:hbox#add () in
+    ignore(GMisc.separator `HORIZONTAL ~packing:pack_loc#add ());
+    (* validation sur entrée *)
+    entry#event#connect#key_press ~callback:(self#key_callback entry);
     button#connect#clicked ~callback:(self#send entry)
-    
 
 end
 
@@ -107,6 +131,7 @@ END SOURCE
 
 let () = ignore(GMisc.separator `HORIZONTAL ~packing:vbox#add ())
 let invite =
+  
   let cmd_inv = new command_invite vbox in
   ignore (cmd_inv#pack ());
   cmd_inv
