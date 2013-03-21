@@ -303,10 +303,10 @@ let instr_stepmodule ppf lexbuf =
   let cont = ref true in
   while !cont do
     step _1;
+    update_current_event ();
     match !current_checkpoint.c_report with
       | None -> printing_function "No report type after step\n"
       | Some {rep_type=Event} ->
-	update_current_event ();
 	let new_ev = get_current_event() in
 	printf "Old mod : %s | New mod %s | same? : %B\n" !ev.ev_module new_ev.ev_module (new_ev.ev_module = !ev.ev_module);
 	if new_ev.ev_module = !ev.ev_module then
