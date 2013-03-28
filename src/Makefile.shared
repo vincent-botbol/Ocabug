@@ -106,8 +106,8 @@ clean::
 
 #####
 ui_starter.cmo:ui_starter.ml
-	$(CAMLC) $(LINKFLAGS) -I +lablgtk2 \
-	 -c -linkall $(OTHEROBJS) $(OBJS) $<
+	$(CAMLC) $(COMPFLAGS) -I +lablgtk2  \
+	 -c $<
 
 ####
 

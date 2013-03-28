@@ -76,12 +76,13 @@ object (self)
     and button = GButton.button ~label:"SEND" ~packing:hbox#add () in
     ignore(GMisc.separator `HORIZONTAL ~packing:pack_loc#add ());
     (* validation sur entrée *)
-    entry#event#connect#key_press ~callback:(self#key_callback entry);
+    ignore(entry#event#connect#key_press ~callback:(self#key_callback entry));
     button#connect#clicked ~callback:(self#send entry)
 
 end
 
-  
+
+
 
 let vbox = GPack.vbox ~packing:window#add ()
 
@@ -112,6 +113,8 @@ let source_box = let sw = GBin.scrolled_window ~packing:vbox#add
 		    gsw#source_buffer#set_language (Some lang);
 		    gsw#source_buffer#set_highlight_syntax true;
 		    gsw
+
+let source_buffer = source_box#source_buffer
 		 
 let load_source_file filename =
   let text =
@@ -123,6 +126,26 @@ let load_source_file filename =
     buf
   in 
   source_box#source_buffer#set_text text
+
+let breakpoint_pixbuf = GdkPixbuf.from_file "../img/breakpoint.png"
+
+let activate_breakpoint b =
+  print_endline "Breakpoint clické"; true
+    
+let add_breakpoint (dbg_ev : Instruct.debug_event) : unit =
+  let offset = dbg_ev.Instruct.ev_loc.Location.loc_start.Lexing.pos_cnum in
+  let ebox = GBin.event_box ~show:true () in
+  ignore(GMisc.image ~pixbuf:breakpoint_pixbuf ~packing:ebox#add ());
+  ignore(ebox#event#connect#button_press ~callback:(activate_breakpoint));
+  ignore(
+    source_box#add_child_at_anchor 
+      (ebox :> GObj.widget) 
+      (source_buffer#create_child_anchor (source_buffer#get_iter (`OFFSET offset))))   
+    
+(* debug pour test *)
+let load_breakpoints mod_name =
+  let events =  Symbols.events_in_module mod_name in
+  List.iter add_breakpoint events
 
 (*********************
 END SOURCE
@@ -192,6 +215,7 @@ let show_ui () =
     Printf.printf "File not found : %s\n%!" suffixed_name;
   Program_management.ensure_loaded ();
   combo_modules#load_modules_combo !Symbols.modules;
+  load_breakpoints "Test";
   window#show ();
   GMain.Main.main ()
 
