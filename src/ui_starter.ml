@@ -129,6 +129,49 @@ END SOURCE
 **********************)
 
 
+
+(********************
+MODULE SELECTION
+*********************)
+
+class modules_combo =
+object(self)
+
+  val combo = GEdit.combo ~packing:vbox#add ()
+  val mutable current_mod = ""
+  val mutable item_list = []
+
+  method set_module m () =
+    if m <> current_mod then
+      begin
+	current_mod <- m;
+	print_endline m
+      end
+
+  method make_arrow_label ~label ~string =
+    let item = GList.list_item () in (* no packing here, it blocks GTK *)
+    let hbox = GPack.hbox ~spacing:3 ~packing:item#add () in
+    ignore(GMisc.arrow ~kind:`RIGHT ~shadow:`OUT ~packing:hbox#pack ());
+    ignore(GMisc.label ~text:label ~packing:hbox#pack ());
+    combo#set_item_string item string;
+    combo#list#add item;
+    ignore (item#connect#select ~callback:(self#set_module string))
+
+  method load_modules_combo modules = 
+    (* Load les events *)
+    List.iter (fun mod_item -> self#make_arrow_label ~label:mod_item ~string:mod_item)
+      modules;
+    print_endline "test"
+
+end
+
+let combo_modules = new modules_combo
+
+(********************
+END MODULE SELECTION
+*********************)
+
+
 let () = ignore(GMisc.separator `HORIZONTAL ~packing:vbox#add ())
 let invite =
   
@@ -139,25 +182,6 @@ let invite =
 let write str =
   invite#write_buffer str
 
-let make_arrow_label combo ~label ~string =
-  let item = GList.list_item () in (* no packing here, it blocks GTK *)
-  let hbox = GPack.hbox ~spacing:3 ~packing:item#add () in
-  ignore(GMisc.arrow ~kind:`RIGHT ~shadow:`OUT ~packing:hbox#pack ());
-  ignore(GMisc.label ~text:label ~packing:hbox#pack ());
-  combo#set_item_string item string;
-  combo#list#add item;
-  item
-
-
-let combo = GEdit.combo ~packing:vbox#add ()
-
-let load_modules_combo modules = 
-  (* Load les events *)
-  List.iter (fun mod_item -> make_arrow_label combo ~label:mod_item ~string:mod_item; ())
-    modules;
-  print_endline "test";
-  ()
-
 let show_ui () =
   (*Unix.connect Socket_config.debugger_socket (Unix.ADDR_UNIX Socket_config.ocabug_socket_name);*)
   Printf.printf "%s\n%!" !Parameters.program_name;
@@ -167,7 +191,7 @@ let show_ui () =
   else
     Printf.printf "File not found : %s\n%!" suffixed_name;
   Program_management.ensure_loaded ();
-  load_modules_combo !Symbols.modules;
+  combo_modules#load_modules_combo !Symbols.modules;
   window#show ();
   GMain.Main.main ()
 
