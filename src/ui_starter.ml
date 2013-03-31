@@ -9,11 +9,9 @@ let window =
   w
 
 
-(*
-  vbox => Text + input
-
-  Pour l'input => complétion ça peut être cool
-*)
+(********************
+COMMAND INVITE
+********************)
 
 exception Commande_invite
 
@@ -81,86 +79,92 @@ object (self)
 
 end
 
-
-
-
-let vbox = GPack.vbox ~packing:window#add ()
+(********************
+END COMMAND INVITE
+********************)
 
 (********************** 
 SOURCE VIEWER
 **********************)
+class source_viewer packer = 
+object(self)
 
-let lang_mime_type = "text/x-ocaml"
-let use_mime_type = false
-let font_name = "Monospace 10"
+  
+  val breakpoint_pixbuf = GdkPixbuf.from_file "../img/breakpoint.png"
 
-let language_manager = GSourceView2.source_language_manager ~default:true
+  val source_box = 
+    let lang = 
+      let lang_mime_type = "text/x-ocaml"
+      and language_manager = GSourceView2.source_language_manager ~default:true in
+      match language_manager#guess_language ~content_type:lang_mime_type () with
+      | None -> failwith (Printf.sprintf "no language for %s" lang_mime_type)
+      | Some lang -> lang in
+    let sw = GBin.scrolled_window ~packing:packer#add 
+      ~height:300 ~hpolicy:`AUTOMATIC ~vpolicy:`AUTOMATIC ()
+    in let gsw = GSourceView2.source_view ~packing:sw#add ~editable:false 
+	 ~show_line_numbers:true
+	 ~right_margin_position:30
+	 ~smart_home_end:`ALWAYS
+	 ~cursor_visible:true () in
+       gsw#source_buffer#set_highlight_matching_brackets true;
+       gsw#set_show_line_marks true;
+       gsw#source_buffer#set_language (Some lang );
+       gsw#source_buffer#set_highlight_syntax true;
+       gsw#source_buffer#set_text "(* No module loaded *)";
+       gsw
+			
+  method source_buffer = source_box#source_buffer
+      		 
+  method load_source_file filename =
+    let text =
+      let ic = open_in filename in
+      let size = in_channel_length ic in
+      let buf = String.create size in
+      really_input ic buf 0 size;
+      close_in ic;
+      buf
+    in 
+    source_box#source_buffer#set_text text
 
-let lang =
-  match language_manager#guess_language ~content_type:lang_mime_type () with
-    | None -> failwith (Printf.sprintf "no language for %s" lang_mime_type)
-    | Some lang -> lang
+  (** breakpoints **)
+  val break_cpt = ref 0
 
-let source_box = let sw = GBin.scrolled_window ~packing:vbox#add 
-		   ~height:300 ~hpolicy:`AUTOMATIC ~vpolicy:`AUTOMATIC ()
-		 in let gsw = GSourceView2.source_view ~packing:sw#add ~editable:false 
-		 ~show_line_numbers:true
-		 ~right_margin_position:30
-		 ~smart_home_end:`ALWAYS
-		 ~cursor_visible:true () in
-		    gsw#source_buffer#set_highlight_matching_brackets true;
-		    gsw#set_show_line_marks true;
-		    gsw#source_buffer#set_language (Some lang);
-		    gsw#source_buffer#set_highlight_syntax true;
-		    gsw
+  method breakpoint_callback dbg_ev b =
+    print_endline "Breakpoint clické"; true
+      
 
-let source_buffer = source_box#source_buffer
-		 
-let load_source_file filename =
-  let text =
-    let ic = open_in filename in
-    let size = in_channel_length ic in
-    let buf = String.create size in
-    really_input ic buf 0 size;
-    close_in ic;
-    buf
-  in 
-  source_box#source_buffer#set_text text
-
-let breakpoint_pixbuf = GdkPixbuf.from_file "../img/breakpoint.png"
-
-let activate_breakpoint b =
-  print_endline "Breakpoint clické"; true
-    
-let add_breakpoint (dbg_ev : Instruct.debug_event) : unit =
-  let offset = dbg_ev.Instruct.ev_loc.Location.loc_start.Lexing.pos_cnum in
+  method add_breakpoint (dbg_ev : Instruct.debug_event) : unit =
+  let offset = dbg_ev.Instruct.ev_loc.Location.loc_start.Lexing.pos_cnum + !break_cpt in
+  incr break_cpt;
   let ebox = GBin.event_box ~show:true () in
   ignore(GMisc.image ~pixbuf:breakpoint_pixbuf ~packing:ebox#add ());
-  ignore(ebox#event#connect#button_press ~callback:(activate_breakpoint));
+  ignore(ebox#event#connect#button_press ~callback:(self#breakpoint_callback dbg_ev));
   ignore(
     source_box#add_child_at_anchor 
       (ebox :> GObj.widget) 
-      (source_buffer#create_child_anchor (source_buffer#get_iter (`OFFSET offset))))   
+      (self#source_buffer#create_child_anchor (self#source_buffer#get_iter (`OFFSET offset))))   
     
-(* debug pour test *)
-let load_breakpoints mod_name =
+  (* debug pour test *)
+  method load_breakpoints mod_name =
   let events =  Symbols.events_in_module mod_name in
-  List.iter add_breakpoint events
+  break_cpt:=0;
+  List.iter (self#add_breakpoint) events
+      
+    
+end
 
 (*********************
 END SOURCE
 **********************)
 
-
-
 (********************
 MODULE SELECTION
 *********************)
 
-class modules_combo =
+class modules_combo packer =
 object(self)
 
-  val combo = GEdit.combo ~packing:vbox#add ()
+  val combo = GEdit.combo ~packing:packer#add ()
   val mutable current_mod = ""
   val mutable item_list = []
 
@@ -180,7 +184,7 @@ object(self)
     combo#list#add item;
     ignore (item#connect#select ~callback:(self#set_module string))
 
-  method load_modules_combo modules = 
+  method load_combo_modules modules = 
     (* Load les events *)
     List.iter (fun mod_item -> self#make_arrow_label ~label:mod_item ~string:mod_item)
       modules;
@@ -188,19 +192,75 @@ object(self)
 
 end
 
-let combo_modules = new modules_combo
-
 (********************
 END MODULE SELECTION
 *********************)
 
+(** TODO : faire les callbacks *)
+(** Rajouter les icones qui nous interessent *)
+(**********************
+ICONS
+**********************)
 
+let run_callback () = 
+  Printf.printf "run pressed\n%!"
+
+let backstep_callback () = 
+  Printf.printf "backstep pressed\n%!"
+
+let step_callback () = 
+  Printf.printf "step pressed\n%!"
+
+let add_icons packer =
+  let paths_and_callbacks = [ ("../img/icons/backstep.png", backstep_callback)
+			   ; ("../img/icons/run.png", run_callback)
+			   ; ("../img/icons/step.png", step_callback) ]  in
+  List.iter
+    (fun (path, callback) ->
+      let button = GButton.button ~packing:packer#add () in
+      button#set_image ((GMisc.image ~file:path ()) :> GObj.widget);
+      ignore(button#connect#clicked callback))
+    paths_and_callbacks
+
+(**********************
+END ICONS
+**********************)
+
+(**********************
+INSTANCIATION & PACKING
+**********************)
+(** vbox windows *)
+let vbox = GPack.vbox ~packing:window#add ()
+
+(** icons *)
+let () =
+  let icons_hbox = GPack.hbox ~packing:vbox#add () in
+  add_icons icons_hbox
+
+(** separator icons/source *)
 let () = ignore(GMisc.separator `HORIZONTAL ~packing:vbox#add ())
+
+let source_box = new source_viewer vbox
+
+(** separator source/modules *)
+let () = ignore(GMisc.separator `HORIZONTAL ~packing:vbox#add ())
+
+(** combo box modules *)
+let combo_modules = new modules_combo vbox
+
+(** text input/output *)
 let invite =
-  
   let cmd_inv = new command_invite vbox in
   ignore (cmd_inv#pack ());
   cmd_inv
+
+(**********************
+END INSTANCIATION & PACKING
+**********************)
+
+(**********************
+MAIN
+**********************)
 
 let write str =
   invite#write_buffer str
@@ -210,35 +270,15 @@ let show_ui () =
   Printf.printf "%s\n%!" !Parameters.program_name;
   let suffixed_name = !Parameters.program_name^".ml" in
   if Sys.file_exists suffixed_name then
-    load_source_file suffixed_name
+    source_box#load_source_file suffixed_name
   else
     Printf.printf "File not found : %s\n%!" suffixed_name;
   Program_management.ensure_loaded ();
-  combo_modules#load_modules_combo !Symbols.modules;
-  load_breakpoints "Test";
+  combo_modules#load_combo_modules !Symbols.modules;
+  source_box#load_breakpoints "Test";
   window#show ();
   GMain.Main.main ()
 
-(*
-let () = show_ui ()
-*)
-(*let load_file this buffer =
-  let path = (match this#filename with Some s -> s 
-    | _ -> raise Exit) in
-  let ic = open_in path in 
-  let str = ref "" in
-  (try
-     while true do str:=!str^"\n"^(input_line ic) done;
-   with _ -> ());
-  close_in ic; 
-  buffer#set_text !str
-*)
-(*  let file_chooser =
-    GFile.chooser_button ~packing:box1#pack
-      ~action:`OPEN
-      ()*)
-  (*
-  let buffer = GText.buffer () in
-  let t = GText.view ~buffer:buffer ~width:100 ~height:100 ~packing:box1#pack () in
-  file_chooser#connect#selection_changed 
-    (fun () -> load_file file_chooser buffer);*)
+(**********************
+END MAIN
+**********************)

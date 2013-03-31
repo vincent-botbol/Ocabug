@@ -105,9 +105,14 @@ clean::
 	$(CAMLC) -c $(COMPFLAGS) $<
 
 #####
+main.cmo: $(OBJS)
+
 ui_starter.cmo:ui_starter.ml
 	$(CAMLC) $(COMPFLAGS) -I +lablgtk2  \
 	 -c $<
+
+run: all
+	../bin/ocabug$(EXE) ../bin/test
 
 ####
 
