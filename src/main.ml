@@ -285,7 +285,10 @@ let main () =
     Clflags.recursive_types := true;    (* Allow recursive types. *)
 
     Format.set_formatter_out_channel Socket_config.outchan;
-    my_protect Socket_config.formatter Ui_starter.show_ui Ui_starter.show_ui
+    my_protect
+      Socket_config.formatter
+      Ocabug_controller.show_ui
+      Ocabug_controller.show_ui
 
     (* CHANGE : connect *)
     (*Unix.connect Socket_config.debugger_socket

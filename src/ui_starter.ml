@@ -55,7 +55,7 @@ object (self)
     let value = GdkEvent.Key.keyval key in
     if value = 65421 || value = 65293 then 
       begin self#send entry (); false; end
-      (* up = 65362 | down = 65364 *)	
+      (* up = 65362 | down = 65364 *)
     else if value = 65362 then
       begin
 	entry#set_text !last_command;

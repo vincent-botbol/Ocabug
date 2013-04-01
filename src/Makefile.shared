@@ -46,6 +46,7 @@ OTHEROBJS=\
 
 
 OBJS=\
+	ocabug_view.cmo \
 	socket_config.cmo \
 	dynlink.cmo \
 	int64ops.cmo \
@@ -79,7 +80,7 @@ OBJS=\
 	parser.cmo \
 	command_line.cmo \
 	ocabug_misc.cmo \
-	ui_starter.cmo \
+	ocabug_controller.cmo \
 	main.cmo
 
 all: ocabug$(EXE)
