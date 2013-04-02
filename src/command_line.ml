@@ -295,25 +295,31 @@ let instr_step ppf lexbuf =
     step step_count;
     show_current_event ppf
 
-let instr_stepmodule ppf lexbuf =
+let instr_ocastep ppf lexbuf =
   eol lexbuf;
   ensure_loaded ();
   reset_named_values();
-  let ev = ref (get_current_event ()) in
-  let cont = ref true in
-  while !cont do
-    step _1;
-    update_current_event ();
-    match !current_checkpoint.c_report with
-      | None -> printing_function "No report type after step\n"
-      | Some {rep_type=Event} ->
-	let new_ev = get_current_event() in
-	printf "Old mod : %s | New mod %s | same? : %B\n" !ev.ev_module new_ev.ev_module (new_ev.ev_module = !ev.ev_module);
-	if new_ev.ev_module = !ev.ev_module then
-	  cont := false
-      | _ -> printing_function "Report type different from Event";cont:=false
-  done;
-  show_current_event ppf
+  if current_time() > _0 then
+    begin
+      let ev = ref (get_current_event ()) in
+      print_endline "aight";
+      let cont = ref true in
+      while !cont do
+	step _1;
+	update_current_event ();
+	match !current_checkpoint.c_report with
+	  | None -> printing_function "No report type after step\n"
+	  | Some {rep_type=Event} ->
+	    let new_ev = get_current_event() in
+	    printf "Old mod : %s | New mod %s | same? : %B\n" !ev.ev_module new_ev.ev_module (new_ev.ev_module = !ev.ev_module);
+	    if new_ev.ev_module = !ev.ev_module then
+	      cont := false
+	  | _ -> printing_function "Report type different from Event";cont:=false
+      done;
+      show_current_event ppf
+    end
+  else
+    instr_step ppf lexbuf
 
 let instr_back ppf lexbuf =
   let step_count =
@@ -1090,7 +1096,7 @@ using \"load_printer\"." };
 "stop using the given function for printing values of its input type." };
   (* OCABUG commands *)
      { instr_name = "ocastep"; instr_prio = true;
-       instr_action = instr_stepmodule; instr_repeat = true; instr_help =
+       instr_action = instr_ocastep; instr_repeat = true; instr_help =
 "go to next event in the same module"};
 	 
   ];

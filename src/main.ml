@@ -26,13 +26,14 @@ open Show_information
 open Format
 open Primitives
 
+(*
 let line_buffer = Lexing.from_function read_user_input
 
 let rec loop ppf =
   line_loop ppf line_buffer;
    if !loaded && (not (yes_or_no "The program is running. Quit anyway")) then
     loop ppf
-
+*)
 let current_duration = ref (-1L)
 
 let rec protect ppf restart loop =
@@ -181,7 +182,7 @@ let rec my_protect ppf restart loop =
   | x ->
       kill_program ();
       raise x
-
+(*
 let execute_file_if_any () =
   let buffer = Buffer.create 128 in
   begin
@@ -215,7 +216,7 @@ let toplevel_loop () =
   interactif := true;
   current_prompt := debugger_prompt;
   protect Format.std_formatter loop loop
-
+*)
 (* Parsing of command-line arguments *)
 
 exception Found_program_name

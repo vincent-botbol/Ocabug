@@ -154,20 +154,38 @@ let remove_position pos =
       new_version ()
     end
 
+
+(* OCABUG GRAPHICAL BREAKPOINT *)
+let add_breakpoint offset breakpoint_number =
+  let module M = Ocabug_view.Source_viewer in
+  let ebox = GBin.event_box ~show:true () in
+  ignore(GMisc.image ~pixbuf:M.breakpoint_pixbuf ~packing:ebox#add ());
+  ignore(ebox#event#connect#button_press ~callback:
+	   (fun _ -> print_string "Breakpoint ";print_int breakpoint_number;
+	     print_newline();true));
+  ignore(
+    M.source_box#add_child_at_anchor 
+      (ebox :> GObj.widget) 
+      (M.source_buffer#create_child_anchor (M.source_buffer#get_iter (`OFFSET offset))))
+
+
 (* Insert a new breakpoint in lists. *)
 let rec new_breakpoint =
   function
     {ev_repr = Event_child pc} ->
       new_breakpoint (Symbols.any_event_at_pc !pc)
-  | event ->
+    | event ->
       Exec.protect
         (function () ->
           incr breakpoint_number;
           insert_position event.ev_pos;
-          breakpoints := (!breakpoint_number, event) :: !breakpoints);
-    printing_function
-      (sprintf "Breakpoint %d at %d : %s\n" !breakpoint_number event.ev_pos
-	 (Pos.get_desc event))
+          breakpoints := (!breakpoint_number, event) :: !breakpoints;
+	  let offset = event.Instruct.ev_loc.Location.loc_start.Lexing.pos_cnum + !breakpoint_number in
+	  add_breakpoint offset !breakpoint_number
+	);
+      printing_function
+	(sprintf "Breakpoint %d at %d : %s\n" !breakpoint_number event.ev_pos
+	   (Pos.get_desc event))
 
 (* Remove a breakpoint from lists. *)
 let remove_breakpoint number =
