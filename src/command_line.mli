@@ -20,4 +20,6 @@ open Format;;
 
 exception Command_line
 val interprete_line : formatter -> string -> bool;;
+(*
 val line_loop : formatter -> lexbuf -> unit;;
+*)

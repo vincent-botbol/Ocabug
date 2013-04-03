@@ -18,6 +18,13 @@ let word_from_string str =
   done;
   String.sub str 0 !i
 
+open Ocabug_config
+
+let force_read () =
+  Printf.fprintf outchan "%c" '\003';
+  flush outchan;
+  my_input_line pipe_in
+
 (*
 let write_answers () =
   while true do

@@ -20,6 +20,7 @@ open Debugcom
 open Instruct
 open Primitives
 open Printf
+open Ocabug_config
 
 (*** Debugging. ***)
 let debug_breakpoints = ref false
@@ -157,16 +158,10 @@ let remove_position pos =
 
 (* OCABUG GRAPHICAL BREAKPOINT *)
 let add_breakpoint offset breakpoint_number =
-  let module M = Ocabug_view.Source_viewer in
-  let ebox = GBin.event_box ~show:true () in
-  ignore(GMisc.image ~pixbuf:M.breakpoint_pixbuf ~packing:ebox#add ());
+  let ebox = Ocabug_view.Source_viewer.add_breakpoint offset in
   ignore(ebox#event#connect#button_press ~callback:
 	   (fun _ -> print_string "Breakpoint ";print_int breakpoint_number;
-	     print_newline();true));
-  ignore(
-    M.source_box#add_child_at_anchor 
-      (ebox :> GObj.widget) 
-      (M.source_buffer#create_child_anchor (M.source_buffer#get_iter (`OFFSET offset))))
+	     print_newline();true))
 
 
 (* Insert a new breakpoint in lists. *)

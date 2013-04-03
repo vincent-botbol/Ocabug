@@ -38,10 +38,10 @@ object (self)
 	| Debugger_config.Toplevel -> Printf.printf "Toplevel exn caught\n%!"
     end;
     (* to know when to stop reading *)
-    Printf.fprintf Socket_config.outchan "%c" '\003';
+    Printf.fprintf Ocabug_config.outchan "%c" '\003';
     last_command := entry#text; entry#set_text "";
-    flush Socket_config.outchan;
-    let answer = my_input_line Socket_config.pipe_in in
+    flush Ocabug_config.outchan;
+    let answer = my_input_line Ocabug_config.pipe_in in
     if answer <> "" then
       self#write_buffer answer;
     (* TODO : Parse de l'event pour se positionner dans le source *)

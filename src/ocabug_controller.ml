@@ -1,5 +1,6 @@
 open Ocabug_view
 open Ocabug_misc
+open Debugger_config
 
 (**************************
 	    ICONS
@@ -24,10 +25,58 @@ struct
     ; ("../img/icons/run.png", run_callback)
     ; ("../img/icons/step.png", step_callback) ]
 
-  let add_icons () = Icons_viewer.link_icons icons_callbacks
+  let key_callback cmd entry key =
+    let value = GdkEvent.Key.keyval key in
+    if value = 65421 || value = 65293 then
+      begin
+	try
+	  ignore (Command_line.interprete_line Ocabug_config.formatter (cmd^" "^entry#text));
+	  entry#set_text "";
+	  let answer = force_read () in
+	  if answer <> "" then
+	    Command_invite.write_buffer answer;
+	with
+	  | Toplevel ->
+	    Printf.fprintf stdout "Toplevel exn caught\n%!";
+	    entry#set_text "";
+	    write (force_read ())
+	  | Command_line.Command_line ->
+	    Printf.fprintf stdout "Command_line exn caught\n%!";
+	    entry#set_text "";
+	    write (force_read ())
+      end;
+    false
+
+	
+
+  let user_printer_callback () =
+    let w = GWindow.window () in
+    let packer = GPack.vbox ~packing:w#add () in
+    ignore (GText.view
+	      ~packing:packer#add
+	      ~editable:false
+	      ~cursor_visible:false
+	      ~buffer:(GText.buffer ~text:"Load printer object file (e.g : printers.cmo)" () )
+	      ()
+    );
+    let e1 = GEdit.entry ~text:"" ~packing:packer#add ~editable:true () in
+    ignore (e1#event#connect#key_press ~callback:(key_callback "load_printer" e1));
+    ignore (GText.view
+	      ~packing:packer#add
+	      ~editable:false
+	      ~cursor_visible:false
+	      ~buffer:(GText.buffer ~text:"Printer's path name (e.g : Printers.my_printer)" () )
+	      ()
+    );
+    let e2 = GEdit.entry ~text:"" ~packing:packer#add ~editable:true () in
+    ignore (e2#event#connect#key_press ~callback:(key_callback "install_printer" e2));
+    w#show ()
+
+  let add_icons () =
+    Icons_viewer.link_icons icons_callbacks;
+    ignore (Icons_viewer.user_printer_button#connect#clicked user_printer_callback)
 
 end
-    
 
 
 (***********************************************
@@ -99,12 +148,10 @@ struct
 	| Debugger_config.Toplevel -> Printf.printf "Toplevel exn caught\n%!"
     end;
     (* to know when to stop reading *)
-    Printf.fprintf Socket_config.outchan "%c" '\003';
-    last_command := entry#text; entry#set_text "";
-    flush Socket_config.outchan;
-    let answer = my_input_line Socket_config.pipe_in in
+    let answer = Ocabug_misc.force_read () in
     if answer <> "" then
       write_buffer (answer^"\n");
+    entry#set_text "";
     (* TODO : Parse de l'event pour se positionner dans le source *)
     
     (* Suivi automatique du scrolling *)

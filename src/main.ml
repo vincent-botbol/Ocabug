@@ -285,9 +285,9 @@ let main () =
     Config.load_path := !default_load_path;
     Clflags.recursive_types := true;    (* Allow recursive types. *)
 
-    Format.set_formatter_out_channel Socket_config.outchan;
+    Format.set_formatter_out_channel Ocabug_config.outchan;
     my_protect
-      Socket_config.formatter
+      Ocabug_config.formatter
       Ocabug_controller.show_ui
       Ocabug_controller.show_ui
 

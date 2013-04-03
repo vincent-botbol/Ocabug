@@ -37,6 +37,8 @@ struct
       )
       icons_callbacks_list
 
+  let user_printer_button = GButton.button ~label:"user_printer" ~packing:packer#add ()
+
 end
 
 
@@ -99,7 +101,16 @@ struct
       in 
       source_box#source_buffer#set_text text
     else
-      Printf.printf "File not found : %s\n%!" filename;
+      Printf.printf "File not found : %s\n%!" filename
+
+  let add_breakpoint offset =
+    let ebox = GBin.event_box ~show:true () in
+    ignore(GMisc.image ~pixbuf:breakpoint_pixbuf ~packing:ebox#add ());
+    ignore(
+      source_box#add_child_at_anchor 
+	(ebox :> GObj.widget) 
+	(source_buffer#create_child_anchor (source_buffer#get_iter (`OFFSET offset))));
+    ebox
 
 end
   
@@ -176,7 +187,7 @@ end
 
 
 
-
+let write = Command_invite.write_buffer
 
 
 

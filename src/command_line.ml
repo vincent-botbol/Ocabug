@@ -44,6 +44,7 @@ open Breakpoints
 open Checkpoints
 open Frames
 open Printval
+open Ocabug_config
 
 (** Instructions, variables and infos lists. **)
 type dbg_instruction =

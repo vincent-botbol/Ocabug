@@ -47,7 +47,7 @@ OTHEROBJS=\
 
 OBJS=\
 	ocabug_view.cmo \
-	socket_config.cmo \
+	ocabug_config.cmo \
 	dynlink.cmo \
 	int64ops.cmo \
 	primitives.cmo \
@@ -107,10 +107,6 @@ clean::
 
 #####
 main.cmo: $(OBJS)
-
-ui_starter.cmo:ui_starter.ml
-	$(CAMLC) $(COMPFLAGS) -I +lablgtk2  \
-	 -c $<
 
 run: all
 	../bin/ocabug$(EXE) ../bin/test

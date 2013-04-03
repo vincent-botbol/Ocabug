@@ -138,19 +138,3 @@ let std_io = {
   }
 
 
-
-(* CHANGE *)
-
-open Socket_config
-
-let printing_function str =
-  Printf.fprintf outchan "%s%!" str
-
-(*
-let ocabug_io = {
-  io_in = Unix.in_channel_of_descr Socket_config.debugger_socket;
-  io_out = Unix.out_channel_of_descr Socket_config.ocabug_socket;
-  io_fd = Socket_config.ocabug_socket
-}
-*)
-

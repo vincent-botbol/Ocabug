@@ -136,7 +136,8 @@ let install_printer ppf lid =
       (fun formatter repr -> Obj.obj v (Obj.obj repr))
     else
       (fun formatter repr -> Obj.obj v formatter (Obj.obj repr)) in
-  Printval.install_printer path ty_arg ppf print_function
+  Printval.install_printer path ty_arg ppf print_function;
+  fprintf ppf "Printer %s installed\n%!" (name path)
 
 let remove_printer lid =
   let (ty_arg, path, is_old_style) = find_printer_type lid in
