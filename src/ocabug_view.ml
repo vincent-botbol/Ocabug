@@ -169,6 +169,10 @@ struct
   let sw = GBin.scrolled_window ~packing:pack_loc#add 
     ~hpolicy:`AUTOMATIC ~vpolicy:`AUTOMATIC ()
 
+  let adjust_window () =
+    let adj = sw#vadjustment in
+    adj#set_value (adj#upper -. adj#page_size)
+
   let last_command = ref ""
 
   let hbox = GPack.hbox ~packing:pack_loc#add ()

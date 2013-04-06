@@ -11,23 +11,26 @@ open Debugger_config
 module Icons_controller =
 struct
 
-  let run_callback () = 
-    Printf.printf "run pressed\n%!"
-
-  let backstep_callback () = 
-    Printf.printf "backstep pressed\n%!"
-
-  let step_callback () = 
-    Printf.printf "step pressed\n%!"
+  let cmd_callback cmd () =
+    ignore (Command_line.interprete_line Ocabug_config.formatter cmd);
+    Command_invite.adjust_window ()
 
   let icons_callbacks =
-    [ ("../img/icons/backstep.png", backstep_callback)
-    ; ("../img/icons/run.png", run_callback)
-    ; ("../img/icons/step.png", step_callback) ]
+    [ ("../img/icons/backstep.png", cmd_callback "backstep")
+    ; ("../img/icons/run.png", cmd_callback "run")
+    ; ("../img/icons/step.png", cmd_callback "step") ]
 
   let key_callback cmd entry key =
     let value = GdkEvent.Key.keyval key in
     if value = 65421 || value = 65293 then
+      begin
+	cmd_callback (cmd^" "^entry#text) ();
+	entry#set_text "";
+	true
+      end
+    else
+      false
+(*
       begin
 	try
 	  ignore (Command_line.interprete_line Ocabug_config.formatter (cmd^" "^entry#text));
@@ -44,8 +47,7 @@ struct
 	    Printf.fprintf stdout "Command_line exn caught\n%!";
 	    entry#set_text "";
 	    write (force_read ())
-      end;
-    false
+      end;*)
 
 	
 
@@ -65,7 +67,11 @@ struct
 	      ~packing:packer#add
 	      ~editable:false
 	      ~cursor_visible:false
-	      ~buffer:(GText.buffer ~text:"Printer's path name (e.g : Printers.my_printer)" () )
+	      ~buffer:(GText.buffer
+			 ~text:
+			 "Printer's path name (e.g : Printers.my_printer)\n
+Type must be : outchan -> t -> unit"
+			 () )
 	      ()
     );
     let e2 = GEdit.entry ~text:"" ~packing:packer#add ~editable:true () in
@@ -140,23 +146,12 @@ struct
 
   let send () =
     Printf.printf "[DEBUG] Msg sent\n";
-    begin
-      try
-	ignore (Command_line.interprete_line Format.std_formatter entry#text);
-      with
-	| Command_line.Command_line -> Printf.printf "command line exn caught\n%!"
-	| Debugger_config.Toplevel -> Printf.printf "Toplevel exn caught\n%!"
-    end;
-    (* to know when to stop reading *)
-    let answer = Ocabug_misc.force_read () in
-    if answer <> "" then
-      write_buffer (answer^"\n");
+    ignore (Command_line.interprete_line Format.std_formatter entry#text);
     entry#set_text "";
     (* TODO : Parse de l'event pour se positionner dans le source *)
     
     (* Suivi automatique du scrolling *)
-    let adj = sw#vadjustment in
-    adj#set_value (adj#upper -. adj#page_size)
+    adjust_window ()
 
 
 

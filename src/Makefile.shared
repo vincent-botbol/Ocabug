@@ -48,6 +48,7 @@ OTHEROBJS=\
 OBJS=\
 	ocabug_view.cmo \
 	ocabug_config.cmo \
+	ocabug_misc.cmo \
 	dynlink.cmo \
 	int64ops.cmo \
 	primitives.cmo \
@@ -79,7 +80,6 @@ OBJS=\
 	loadprinter.cmo \
 	parser.cmo \
 	command_line.cmo \
-	ocabug_misc.cmo \
 	ocabug_controller.cmo \
 	main.cmo
 

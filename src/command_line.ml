@@ -45,6 +45,7 @@ open Checkpoints
 open Frames
 open Printval
 open Ocabug_config
+open Ocabug_misc
 
 (** Instructions, variables and infos lists. **)
 type dbg_instruction =
@@ -171,25 +172,31 @@ let current_line = ref ""
 let interprete_line ppf line =
   current_line := line;
   let lexbuf = Lexing.from_string line in
-    try
-      match identifier_or_eol Lexer.lexeme lexbuf with
+  try
+    match identifier_or_eol Lexer.lexeme lexbuf with
       | Some x ->
-          begin match matching_instructions x with
+        begin match matching_instructions x with
           | [] ->
-              error "Unknown command."
+            error "Unknown command."
           | [i] ->
-              i.instr_action ppf lexbuf;
-              resume_user_input ();
-              i.instr_repeat
+            i.instr_action ppf lexbuf;
+            resume_user_input ();
+	    (* ocabug printing *)
+	    let answer = Ocabug_misc.force_read () in
+	    if answer <> "" then
+	      Ocabug_view.write (answer^"\n");
+            i.instr_repeat
           | l ->
-              error "Ambiguous command."
-          end
+            error "Ambiguous command."
+        end
       | None ->
-          resume_user_input ();
-          false
-    with
+        resume_user_input ();
+        false
+  with
     | Parsing.Parse_error ->
-        error "Syntax error."
+      Ocabug_view.write "Syntax error.\n";false
+    | Command_line -> Printf.printf "command line exn caught\n%!";false
+    | Toplevel -> Printf.printf "Toplevel exn caught\n%!";false
 
 let line_loop ppf line_buffer =
   resume_user_input ();
@@ -948,11 +955,14 @@ let instr_load_printer ppf lexbuf =
     Loadprinter.report_error ppf e; raise Toplevel
 
 let instr_install_printer ppf lexbuf =
+  print_endline "INSTALL PRINTER";
   let lid = longident_eol Lexer.lexeme lexbuf in
   try
-    Loadprinter.install_printer ppf lid
+    Loadprinter.install_printer ppf lid;
+    print_endline "YABON"
   with Loadprinter.Error e ->
-    Loadprinter.report_error ppf e; raise Toplevel
+    Loadprinter.report_error ppf e; Ocabug_view.write (force_read ());
+    raise Toplevel
 
 let instr_remove_printer ppf lexbuf =
   let lid = longident_eol Lexer.lexeme lexbuf in
