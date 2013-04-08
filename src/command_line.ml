@@ -182,9 +182,7 @@ let interprete_line ppf line =
             i.instr_action ppf lexbuf;
             resume_user_input ();
 	    (* ocabug printing *)
-	    let answer = Ocabug_misc.force_read () in
-	    if answer <> "" then
-	      Ocabug_view.write (answer^"\n");
+	    Ocabug_misc.force_write ();
             i.instr_repeat
           | l ->
             error "Ambiguous command."

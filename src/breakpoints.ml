@@ -20,7 +20,7 @@ open Debugcom
 open Instruct
 open Primitives
 open Printf
-open Ocabug_config
+open Ocabug_misc
 
 (*** Debugging. ***)
 let debug_breakpoints = ref false
@@ -154,15 +154,7 @@ let remove_position pos =
       positions := List.remove_assoc pos !positions;
       new_version ()
     end
-
-
-(* OCABUG GRAPHICAL BREAKPOINT *)
-let add_breakpoint offset breakpoint_number =
-  let ebox = Ocabug_view.Source_viewer.add_breakpoint offset in
-  ignore(ebox#event#connect#button_press ~callback:
-	   (fun _ -> print_string "Breakpoint ";print_int breakpoint_number;
-	     print_newline();true))
-
+  
 
 (* Insert a new breakpoint in lists. *)
 let rec new_breakpoint =
@@ -172,15 +164,19 @@ let rec new_breakpoint =
     | event ->
       Exec.protect
         (function () ->
+	  (*
+	  if List.mem_assoc event.ev_pos !positions then
+	    printing_function "Already a breakpoint here\n"
+	  else
+	  *)
           incr breakpoint_number;
           insert_position event.ev_pos;
           breakpoints := (!breakpoint_number, event) :: !breakpoints;
-	  let offset = event.Instruct.ev_loc.Location.loc_start.Lexing.pos_cnum + !breakpoint_number in
-	  add_breakpoint offset !breakpoint_number
-	);
-      printing_function
-	(sprintf "Breakpoint %d at %d : %s\n" !breakpoint_number event.ev_pos
-	   (Pos.get_desc event))
+	  printing_function
+	    (sprintf "Breakpoint %d at %d : %s\n"
+	       !breakpoint_number event.ev_pos
+	       (Pos.get_desc event))
+	)
 
 (* Remove a breakpoint from lists. *)
 let remove_breakpoint number =
@@ -192,7 +188,7 @@ let remove_breakpoint number =
           breakpoints := List.remove_assoc number !breakpoints;
           remove_position pos;
           printing_function 
-	    (sprintf "Removed breakpoint %d at %d : %s" number ev.ev_pos
+	    (sprintf "Removed breakpoint %d at %d : %s\n" number ev.ev_pos
                (Pos.get_desc ev))
         )
   with

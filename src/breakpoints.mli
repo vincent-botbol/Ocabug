@@ -28,6 +28,9 @@ val breakpoints_count : unit -> int
 (* Breakpoint number -> debug_event_kind. *)
 val breakpoints : (int * debug_event) list ref
 
+(* OCABUG add, current breakpoint_number *)
+val breakpoint_number : int ref
+
 (* Is there a breakpoint at `pc' ? *)
 val breakpoint_at_pc : int -> bool
 

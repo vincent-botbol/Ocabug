@@ -30,11 +30,3 @@ let pipe_in, pipe_out = ThreadUnix.pipe ()
 let outchan = Unix.out_channel_of_descr pipe_out
 let inchan = Unix.in_channel_of_descr pipe_in
 let formatter = Format.formatter_of_out_channel outchan
-
-
-
-let printing_function str =
-  Printf.fprintf outchan "%s%!" str
-
-let force_print str =
-  Ocabug_view.Command_invite.write_buffer str

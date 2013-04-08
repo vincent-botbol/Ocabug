@@ -63,6 +63,10 @@ struct
   
   let breakpoint_pixbuf = GdkPixbuf.from_file "../img/breakpoint.png"
 
+  let event_pixbuf = GdkPixbuf.from_file "../img/icons/temp/bullet_plus.png"
+
+  let ebox_list = ref ( [] : (int * (int * int)) list)
+
   let source_box = 
     let lang = 
       let lang_mime_type = "text/x-ocaml" in

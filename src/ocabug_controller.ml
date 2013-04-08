@@ -92,7 +92,57 @@ end
 module Source_controller =
 struct
 
-  let load_source () = Source_viewer.load_source_file (!Parameters.program_name ^ ".ml")
+  open Source_viewer
+
+  let load_source () = load_source_file (!Parameters.program_name ^ ".ml")
+
+
+  (* here comes events and breakpoints icons handling *)
+
+    (* to fix event boxes offset *)
+  (*let fix_offset = let n =  ref (-1) in (fun () -> incr n; !n)*)
+
+
+  (* key : event box number /
+     value : click (break or event) * breakpoint number *)
+  let ebox_list =
+    ref ([] : (int * (bool ref * int ref)) list)
+
+  let event_break_callback n ev img b =
+    (* true if click is break *)
+    let (click,break_number) = List.assoc n !ebox_list in
+    if !click then
+      begin
+	img#set_pixbuf breakpoint_pixbuf;
+	Breakpoints.new_breakpoint ev;
+	break_number := !Breakpoints.breakpoint_number
+      end
+    else
+      begin
+	img#set_pixbuf event_pixbuf;
+	Breakpoints.remove_breakpoint !break_number
+      end;
+    force_write ();
+    click := not !click;
+    true
+
+  let make_event_box n ev =
+    let offset = (Events.get_pos ev).Lexing.pos_cnum + n in
+    let ebox = GBin.event_box ~show:true () in
+    let img = GMisc.image ~pixbuf:event_pixbuf ~packing:ebox#add () in
+    (* see above *)
+    ebox_list := (n,(ref true,ref (-1)))::!ebox_list;
+    (* inserts event box in buffer *)
+    ignore(
+      source_box#add_child_at_anchor 
+	(ebox :> GObj.widget) 
+	(source_buffer#create_child_anchor (source_buffer#get_iter (`OFFSET offset))));
+    ignore(ebox#event#connect#button_press ~callback:(event_break_callback n ev img))
+
+  let load_events ev_module =
+    let l = Symbols.events_in_module ev_module in
+    list_iteri make_event_box l
+    
 
 end
 
@@ -145,7 +195,6 @@ struct
   let last_command = ref ""
 
   let send () =
-    Printf.printf "[DEBUG] Msg sent\n";
     ignore (Command_line.interprete_line Format.std_formatter entry#text);
     entry#set_text "";
     (* TODO : Parse de l'event pour se positionner dans le source *)
@@ -190,8 +239,10 @@ end
 
 let show_ui () =
   print_endline "Start show_ui";
+  Program_management.ensure_loaded ();
   Icons_controller.add_icons ();
   Source_controller.load_source ();
+  Source_controller.load_events "Test";
   Modules_controller.load_modules ();
   Toplevel_controller.connect ();
   print_endline "Everything loaded";
