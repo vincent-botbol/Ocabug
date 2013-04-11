@@ -159,11 +159,11 @@ let remove_position pos =
 (* PB POUR LES EVENTS FILS *)
 
 (* Insert a new breakpoint in lists. *)
-let rec new_breakpoint =
-  function
+let rec new_breakpoint event =
+  (*function
     {ev_repr = Event_child pc} ->
       new_breakpoint (Symbols.any_event_at_pc !pc)
-    | event ->
+    | event ->*)
       Exec.protect
         (function () ->
 	  (*

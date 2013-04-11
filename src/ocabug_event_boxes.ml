@@ -1,10 +1,9 @@
 open Ocabug_view
 open Source_viewer
 
-let ebox_list =
-    ref ([] :
-	    (int * (bool ref * int ref * GMisc.image * Instruct.debug_event))
-	    list)
+let ebox_list :
+    (int * (bool ref * int ref * GMisc.image * Instruct.debug_event)) list ref
+    = ref []
 
 let add_ebox n img ev =
   ebox_list := (n, (ref true, ref (-1), img, ev)) :: !ebox_list
