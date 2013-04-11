@@ -1,7 +1,13 @@
 Ocabug
 ======
 
-TODO: débugger l'interface qui veut pas se lancer avec ./src/ocabug
+TODO:
+- Améliorer l'interface graphique
+- Mettre en surbrillance l'event courant
+- Compter le nombre de passage sur un event
+  (pour cela, il faut toucher à internal_step dans time_travel.ml et ne faire des step que de 1 mais n fois plutôt qu'un step de n)
+- Détecter le changement de thread dans la VM
+- ...
 
 Visual ocaml debugger
 
