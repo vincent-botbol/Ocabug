@@ -32,7 +32,12 @@ let force_write () =
   Ocabug_view.Command_invite.adjust_window ()
 
 let printing_function str =
-  Printf.fprintf outchan "%s%!" str
+  Ocabug_view.write (str^"\n");
+  Ocabug_view.Command_invite.adjust_window ()
+(*
+  Printf.fprintf outchan "%s%!" str;
+  force_write ()
+*)
 (* 
 let write_answers () =
   while true do

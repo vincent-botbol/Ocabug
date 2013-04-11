@@ -18,7 +18,8 @@ struct
   let icons_callbacks =
     [ ("../img/icons/backstep.png", cmd_callback "backstep")
     ; ("../img/icons/run.png", cmd_callback "run")
-    ; ("../img/icons/step.png", cmd_callback "step") ]
+    ; ("../img/icons/step.png", cmd_callback "step") 
+    ; ("../img/icons/temp/bullet_left.png", cmd_callback "reverse") ]
 
   let key_callback cmd entry key =
     let value = GdkEvent.Key.keyval key in
@@ -103,27 +104,17 @@ struct
   (*let fix_offset = let n =  ref (-1) in (fun () -> incr n; !n)*)
 
 
-  (* key : event box number /
-     value : click (break or event) * breakpoint number *)
-  let ebox_list =
-    ref ([] : (int * (bool ref * int ref)) list)
+  open Ocabug_event_boxes
+
+  let break_callback ev = fun () -> Breakpoints.new_breakpoint ev
+  let event_callback n = fun () -> Breakpoints.remove_breakpoint n
 
   let event_break_callback n ev img b =
-    (* true if click is break *)
-    let (click,break_number) = List.assoc n !ebox_list in
-    if !click then
-      begin
-	img#set_pixbuf breakpoint_pixbuf;
-	Breakpoints.new_breakpoint ev;
-	break_number := !Breakpoints.breakpoint_number
-      end
-    else
-      begin
-	img#set_pixbuf event_pixbuf;
-	Breakpoints.remove_breakpoint !break_number
-      end;
-    force_write ();
-    click := not !click;
+    set_or_remove_break
+      (* break number incremented because call to new_event is not done yet *)
+      n
+      (break_callback ev)
+      event_callback;
     true
 
   let make_event_box n ev =
@@ -131,7 +122,7 @@ struct
     let ebox = GBin.event_box ~show:true () in
     let img = GMisc.image ~pixbuf:event_pixbuf ~packing:ebox#add () in
     (* see above *)
-    ebox_list := (n,(ref true,ref (-1)))::!ebox_list;
+    add_ebox n img ev;
     (* inserts event box in buffer *)
     ignore(
       source_box#add_child_at_anchor 

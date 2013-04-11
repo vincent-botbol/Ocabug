@@ -156,6 +156,8 @@ let remove_position pos =
     end
   
 
+(* PB POUR LES EVENTS FILS *)
+
 (* Insert a new breakpoint in lists. *)
 let rec new_breakpoint =
   function
@@ -169,9 +171,14 @@ let rec new_breakpoint =
 	    printing_function "Already a breakpoint here\n"
 	  else
 	  *)
+	  (match event.ev_repr with
+	      Event_parent _ -> print_endline "PARENT"
+	    | _ -> ()
+	  );
           incr breakpoint_number;
           insert_position event.ev_pos;
           breakpoints := (!breakpoint_number, event) :: !breakpoints;
+	  Ocabug_event_boxes.set_break_from_event event !breakpoint_number;
 	  printing_function
 	    (sprintf "Breakpoint %d at %d : %s\n"
 	       !breakpoint_number event.ev_pos
@@ -187,6 +194,7 @@ let remove_breakpoint number =
         (function () ->
           breakpoints := List.remove_assoc number !breakpoints;
           remove_position pos;
+	  Ocabug_event_boxes.remove_break_from_number number;
           printing_function 
 	    (sprintf "Removed breakpoint %d at %d : %s\n" number ev.ev_pos
                (Pos.get_desc ev))

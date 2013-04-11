@@ -49,6 +49,7 @@ OBJS=\
 	ocabug_view.cmo \
 	ocabug_config.cmo \
 	ocabug_misc.cmo \
+	ocabug_event_boxes.cmo \
 	dynlink.cmo \
 	int64ops.cmo \
 	primitives.cmo \

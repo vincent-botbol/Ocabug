@@ -65,7 +65,7 @@ struct
 
   let event_pixbuf = GdkPixbuf.from_file "../img/icons/temp/bullet_plus.png"
 
-  let ebox_list = ref ( [] : (int * (int * int)) list)
+  let ebox_list = ref ( [] : (int * GMisc.image) list)
 
   let source_box = 
     let lang = 
