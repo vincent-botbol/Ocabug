@@ -8,6 +8,7 @@ exception No_such_event_box
 type event_box =
     { mutable click : bool; (* to know if we want to create or
 			       remove a breakpoint *)
+      mutable highlighted : bool;
       mutable break_number : int;
       mutable counter : int; (* how many times we go through this event *)
       image : GMisc.image;
@@ -16,13 +17,10 @@ type event_box =
 
 let event_boxes : (int, event_box) Hashtbl.t = Hashtbl.create 30
 
-let ebox_list :
-    (int * (bool ref * int ref * GMisc.image * Instruct.debug_event)) list ref
-    = ref []
-
 let add_ebox n img ev =
   add event_boxes n
     { click = true;
+      highlighted = false;
       break_number = -1;
       counter = 0;
       image = img;
@@ -53,7 +51,10 @@ let ebox_from_break_number break_number =
 
 let set_break ebox new_bn =
   assert ebox.click;
-  ebox.image#set_pixbuf breakpoint_pixbuf;
+  if ebox.highlighted then
+    ebox.image#set_pixbuf breakpoint_pixbuf2
+  else
+    ebox.image#set_pixbuf breakpoint_pixbuf;
   ebox.break_number <- new_bn;
   ebox.click <- false
 
@@ -69,7 +70,10 @@ let set_break_from_ebox_number ebox_number break_number =
     (* bn is the reference containing the associated breakpoint number with the event *)
 let remove_break ebox =
   assert (not ebox.click);
-  ebox.image#set_pixbuf event_pixbuf;
+  if ebox.highlighted then
+    ebox.image#set_pixbuf event_pixbuf2
+  else
+    ebox.image#set_pixbuf event_pixbuf;
   ebox.break_number <- -1;
   ebox.click <- true
 
@@ -81,7 +85,7 @@ let remove_break_from_ebox_number ebox_number =
     remove_break (Hashtbl.find event_boxes ebox_number)
   with
       Not_found -> raise No_such_event_box
-	
+
 let set_or_remove_break ebox_number callback1 callback2 =
   let {click = b; break_number = bn} =
     (Hashtbl.find event_boxes ebox_number)
@@ -92,4 +96,26 @@ let set_or_remove_break ebox_number callback1 callback2 =
   else
     (* remove_breakpoint *)
     callback2 bn ()
+
+let highlight ev =
+  try
+    let ebox = ebox_from_event ev in
+    ebox.highlighted <- true;
+    if ebox.click then
+      ebox.image#set_pixbuf event_pixbuf2
+    else
+      ebox.image#set_pixbuf breakpoint_pixbuf2
+  with
+    | No_such_event_box -> ()
+
+let remove_highlight ev =
+  try
+    let ebox = ebox_from_event ev in
+    ebox.highlighted <- false;
+    if ebox.click then
+      ebox.image#set_pixbuf event_pixbuf
+    else
+      ebox.image#set_pixbuf breakpoint_pixbuf
+  with
+    | No_such_event_box -> ()
 

@@ -62,10 +62,9 @@ struct
   let packer = vbox
   
   let breakpoint_pixbuf = GdkPixbuf.from_file "../img/breakpoint.png"
-
   let event_pixbuf = GdkPixbuf.from_file "../img/icons/temp/bullet_plus.png"
-
-  let ebox_list = ref ( [] : (int * GMisc.image) list)
+  let breakpoint_pixbuf2 = GdkPixbuf.from_file "../img/icons/temp/decline.png"
+  let event_pixbuf2 = GdkPixbuf.from_file "../img/icons/temp/control_add.png"
 
   let source_box = 
     let lang = 

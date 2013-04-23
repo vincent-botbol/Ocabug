@@ -186,16 +186,16 @@ let old_pc = ref (None : int option)
 (* Recompute the current event *)
 let update_current_event () =
   match Checkpoints.current_pc () with
-    None ->
-      Events.current_event := None;
-      old_pc := None
-  | (Some pc) as opt_pc when opt_pc <> !old_pc ->
-      Events.current_event :=
-        begin try
-          Some (event_at_pc pc)
+    | None ->
+	Events.set_current_event None;
+	old_pc := None
+    | (Some pc) as opt_pc when opt_pc <> !old_pc ->
+      begin
+	try
+          Events.set_current_event (Some (event_at_pc pc))
         with Not_found ->
-          None
-        end;
+          Events.set_current_event None
+      end;
       old_pc := opt_pc
-  | _ ->
+    | _ ->
       ()

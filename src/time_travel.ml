@@ -301,42 +301,49 @@ let internal_step duration =
            update_breakpoints ();
            update_trap_barrier ();
            !current_checkpoint.c_state <- C_running duration;
+	   (*let tmp_report = ref (do_go _1) in
+	   let nth_step = ref ((to_int duration) - 1) in
+	   while (report.execution_summary = Event) && (duration > 0) do
+	     tmp_report := do_go _1;
+	     decr nth_step
+	   done;
+	   *)
            let report = do_go duration in
-             !current_checkpoint.c_report <- Some report;
-             !current_checkpoint.c_state <- C_stopped;
-             if report.rep_type = Event then begin
-               !current_checkpoint.c_time <-
-                 !current_checkpoint.c_time ++ duration;
-               interrupted := false;
-               last_breakpoint := None
-               end
-             else begin
-               !current_checkpoint.c_time <-
-                  !current_checkpoint.c_time ++ duration
-                  -- (Int64.of_int report.rep_event_count) ++ _1;
-               interrupted := true;
-               last_breakpoint := None;
-               stop_on_event report
-               end;
-             (try
-                insert_checkpoint !current_checkpoint
-              with
+           !current_checkpoint.c_report <- Some report;
+           !current_checkpoint.c_state <- C_stopped;
+           if report.rep_type = Event then begin
+             !current_checkpoint.c_time <-
+               !current_checkpoint.c_time ++ duration;
+             interrupted := false;
+             last_breakpoint := None
+           end
+           else begin
+             !current_checkpoint.c_time <-
+               !current_checkpoint.c_time ++ duration
+             -- (Int64.of_int report.rep_event_count) ++ _1;
+             interrupted := true;
+             last_breakpoint := None;
+             stop_on_event report
+           end;
+           (try
+              insert_checkpoint !current_checkpoint
+            with
                 Exit ->
                   kill_checkpoint !current_checkpoint;
                   set_current_checkpoint
                     (find_checkpoint_before (current_time ()))));
-        if !debug_time_travel then begin
-          print_string "Checkpoints : pid(time)"; print_newline ();
-          List.iter
-            (function {c_time = time; c_pid = pid; c_valid = valid} ->
-              Printf.printf "%d(%Ld)%s " pid time
-                            (if valid then "" else "(invalid)"))
-            !checkpoints;
-          print_newline ()
-        end
-
+    if !debug_time_travel then begin
+      print_string "Checkpoints : pid(time)"; print_newline ();
+      List.iter
+        (function {c_time = time; c_pid = pid; c_valid = valid} ->
+          Printf.printf "%d(%Ld)%s " pid time
+            (if valid then "" else "(invalid)"))
+        !checkpoints;
+      print_newline ()
+    end
+      
 (*** Miscellaneous functions (exported). ***)
-
+      
 (* Create a checkpoint at time 0 (new program). *)
 let new_checkpoint pid fd =
   let new_checkpoint =

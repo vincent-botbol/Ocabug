@@ -16,6 +16,7 @@
 (********************************* Events ******************************)
 
 open Instruct
+open Ocabug_event_boxes
 
 let get_pos ev =
   match ev.ev_kind with
@@ -30,6 +31,20 @@ let get_pos ev =
 (* Event at current position *)
 let current_event =
   ref (None : debug_event option)
+
+let set_current_event (ev : debug_event option) =
+  begin
+    match !current_event with
+      | None -> ()
+      | Some e -> remove_highlight e
+  end;
+  begin
+  match ev with
+    | None -> ()
+    | Some e -> highlight e
+  end;
+  current_event := ev
+
 
 (* Current position in source. *)
 (* Raise `Not_found' if not on an event (beginning or end of program). *)
