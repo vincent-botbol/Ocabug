@@ -18,9 +18,17 @@
 open Instruct
 open Debugger_config (* Toplevel *)
 open Program_loading
+open Filename
 
 let modules =
   ref ([] : string list)
+let exclude_modules =
+  let l =
+    List.map
+      (fun s -> String.capitalize (Filename.chop_extension s))
+      (Ocabug_misc.dir_content (Config.standard_library))
+  in
+  ref l
 
 let events =
   ref ([] : debug_event list)

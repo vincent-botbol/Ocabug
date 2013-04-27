@@ -1,4 +1,6 @@
 open Ocabug_config
+open Unix
+open Filename
 
 let my_input_line fd = 
   let s = " "  and  r = ref ""
@@ -9,9 +11,6 @@ let my_output_line fd str =
   ignore (ThreadUnix.write fd str 0 (String.length str))
 
 exception Failed_read_ic
-
-let read_ic ic =
-  ()
 
 let word_from_string str =
   let i = ref 0 and n = String.length str in
@@ -45,6 +44,7 @@ let write_answers () =
   done
 *)
 
+(* classic iteri, not available before 4.0 *)
 let list_iteri f =
   let rec aux n =
     function
@@ -52,3 +52,16 @@ let list_iteri f =
       | x::xs -> f n x; aux (n+1) xs
   in
   aux 0
+
+let dir_content dir =
+  let file_list = ref [] in
+  let handle = opendir dir in
+  try
+    while true do
+      let file = readdir handle in
+      if (check_suffix file ".ml") || (check_suffix file ".mli") then
+      file_list := file :: !file_list
+    done;
+    failwith "come check me in dir_content !"
+  with
+    | End_of_file -> !file_list

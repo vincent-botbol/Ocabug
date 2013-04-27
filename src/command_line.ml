@@ -327,6 +327,24 @@ let instr_ocastep ppf lexbuf =
   else
     instr_step ppf lexbuf
 
+let instr_ocabigstep ppf lexbuf =
+  eol lexbuf;
+  ensure_loaded ();
+  reset_named_values();
+  let cont = ref true in
+  while !cont do
+    step _1;
+    update_current_event();
+    if not (List.mem (get_current_event()).ev_module !exclude_modules) then
+      cont := false;
+    match !current_checkpoint.c_report with
+      | None -> printing_function "No report type after step\n"
+      | Some {rep_type=Event} -> ()
+      | _ -> printing_function "Report type different from Event";cont:=false
+  done;
+  show_current_event ppf
+  
+
 let instr_back ppf lexbuf =
   let step_count =
     match opt_signed_int64_eol Lexer.lexeme lexbuf with
@@ -1107,7 +1125,9 @@ using \"load_printer\"." };
      { instr_name = "ocastep"; instr_prio = true;
        instr_action = instr_ocastep; instr_repeat = true; instr_help =
 "go to next event in the same module"};
-	 
+     { instr_name = "ocabigstep"; instr_prio = true;
+       instr_action = instr_ocabigstep; instr_repeat = true; instr_help =
+"go to next event that does not come from an excluded module"};
   ];
   
   variable_list := [
