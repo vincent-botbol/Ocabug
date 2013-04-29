@@ -53,6 +53,14 @@ let list_iteri f =
   in
   aux 0
 
+let list_mapi f l =
+  let rec aux n acc =
+    function
+      | [] -> acc
+      | x::xs -> aux (n+1) ((f n x)::acc) xs
+  in
+  List.rev (aux 0 [] l)
+
 let dir_content dir =
   let file_list = ref [] in
   let handle = opendir dir in
@@ -65,3 +73,17 @@ let dir_content dir =
     failwith "come check me in dir_content !"
   with
     | End_of_file -> !file_list
+
+
+let source_of_module mdl = (String.uncapitalize mdl) ^ ".ml"
+
+let module_of_source src = 
+  if (Filename.check_suffix src ".ml") ||
+    (Filename.check_suffix src ".mli")
+  then
+    String.capitalize (chop_extension (basename src))
+  else
+    begin
+      Printf.printf "File not found %s\n%!" src;
+      failwith "come in Ocabug_misc.module_of_source"
+    end

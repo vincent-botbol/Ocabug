@@ -1,4 +1,5 @@
 open Ocabug_view
+open Ocabug_misc
 open Source_viewer
 open Instruct
 open Hashtbl
@@ -8,47 +9,61 @@ exception No_such_event_box
 type event_box =
     { mutable click : bool; (* to know if we want to create or
 			       remove a breakpoint *)
-      mutable highlighted : bool;
+      mutable highlighted : bool; (* true if current event *)
       mutable break_number : int;
       mutable counter : int; (* how many times we go through this event *)
-      image : GMisc.image;
+      mutable image : GMisc.image;
       event : Instruct.debug_event
     }
 
-let event_boxes : (int, event_box) Hashtbl.t = Hashtbl.create 30
+let event_boxes_by_module :
+    (string, (int * event_box) list) Hashtbl.t
+     = Hashtbl.create 10
+let current_event_boxes : (int * event_box) list ref
+    = ref []
 
-let add_ebox n img ev =
-  add event_boxes n
-    { click = true;
-      highlighted = false;
-      break_number = -1;
-      counter = 0;
-      image = img;
-      event = ev
-    }
 
+let ebox ev img_pixbuf =
+  { click = true;
+    highlighted = false;
+    break_number = -1;
+    counter = 0;
+    image = GMisc.image ~pixbuf:img_pixbuf ();
+    event = ev
+  }
+    
+let add_eboxes mdl events img_pixbuf=
+  Hashtbl.add event_boxes_by_module mdl
+    (list_mapi (fun n ev -> (n, ebox ev img_pixbuf)) events)
+    
+    
 let ebox_from_event ev =
-  let res = ref None in
   try
-    Hashtbl.iter (fun _ ebox ->
-      if ebox.event.ev_pos = ev.ev_pos then
-	begin res := Some ebox; raise Exit end)
-      event_boxes;
-    raise No_such_event_box
+    snd
+      (List.find (fun (_,ebox) -> ebox.event.ev_pos = ev.ev_pos)
+	 (Hashtbl.find event_boxes_by_module ev.ev_module))
   with
-    | Exit -> (match !res with Some x -> x | _ -> raise No_such_event_box)
-
+    | Not_found -> raise No_such_event_box
+      
 let ebox_from_break_number break_number =
   let res = ref None in
   try
-    Hashtbl.iter (fun _ ebox ->
-      if ebox.break_number = break_number then
-	begin res := Some ebox; raise Exit end)
-      event_boxes;
-    raise No_such_event_box
+    Hashtbl.iter
+      (fun _ ebox_list ->
+	try
+	  res := Some (snd (List.find (fun (_,ebox) ->
+	    ebox.break_number = break_number) ebox_list));
+	  raise Exit
+	with
+	  | Not_found -> ()
+      )
+      event_boxes_by_module;
+    failwith "ebox not found"
   with
-    | Exit -> (match !res with Some x -> x | _ -> raise No_such_event_box)
-
+    | Exit -> match !res with Some ebox -> ebox | None -> failwith "impossible"
+      
+      
+	    
 let set_break ebox new_bn =
   assert ebox.click;
   if ebox.highlighted then
@@ -63,7 +78,7 @@ let set_break_from_event event break_number =
 
 let set_break_from_ebox_number ebox_number break_number =
   try
-    set_break (Hashtbl.find event_boxes ebox_number) break_number
+    set_break (List.assoc ebox_number !current_event_boxes) break_number
   with
       Not_found -> raise No_such_event_box
 
@@ -82,13 +97,13 @@ let remove_break_from_number break_number =
 
 let remove_break_from_ebox_number ebox_number =
   try
-    remove_break (Hashtbl.find event_boxes ebox_number)
+    remove_break (List.assoc ebox_number !current_event_boxes)
   with
       Not_found -> raise No_such_event_box
 
 let set_or_remove_break ebox_number callback1 callback2 =
   let {click = b; break_number = bn} =
-    (Hashtbl.find event_boxes ebox_number)
+    (List.assoc ebox_number !current_event_boxes)
   in
   if b then
     (* new_breakpoint *)
@@ -118,4 +133,5 @@ let remove_highlight ev =
       ebox.image#set_pixbuf breakpoint_pixbuf
   with
     | No_such_event_box -> ()
+
 

@@ -95,7 +95,12 @@ struct
 
   open Source_viewer
 
-  let load_source () = load_source_file (!Parameters.program_name ^ ".ml")
+    (* default is *)
+  let source_file = ref ""
+  let load_source () =
+    if !source_file = "" then
+      source_file := !Parameters.program_name ^ ".ml";
+    load_source_file !source_file
 
 
   (* here comes events and breakpoints icons handling *)
@@ -116,8 +121,8 @@ struct
       (break_callback ev)
       event_callback;
     true
-
-  let make_event_box n ev =
+(*
+  let record_event_box n ev =
     let offset = (Events.get_pos ev).Lexing.pos_cnum + n in
     let ebox = GBin.event_box ~show:true () in
     let img = GMisc.image ~pixbuf:event_pixbuf ~packing:ebox#add () in
@@ -129,12 +134,47 @@ struct
 	(ebox :> GObj.widget) 
 	(source_buffer#create_child_anchor (source_buffer#get_iter (`OFFSET offset))));
     ignore(ebox#event#connect#button_press ~callback:(event_break_callback n ev img))
+*)
 
-  let load_events ev_module =
-    let l = Symbols.events_in_module ev_module in
-    list_iteri make_event_box l
+  let show_events_from_module mdl =
+    current_event_boxes := Hashtbl.find event_boxes_by_module mdl;
+    List.iter
+      (fun (n, ebox) ->
+	print_int n;
+	let offset = (Events.get_pos ebox.event).Lexing.pos_cnum + n in
+	let gtk_ebox = GBin.event_box ~show:true () in
+	let pix = ebox.image#pixbuf in
+	ebox.image <-
+	  GMisc.image ~pixbuf:pix ~packing:gtk_ebox#add ();
+	print_endline "image loaded";
+	ignore(
+	  source_box#add_child_at_anchor 
+	    (gtk_ebox :> GObj.widget) 
+	    (source_buffer#create_child_anchor
+	       (source_buffer#get_iter (`OFFSET offset))));
+	print_endline "child added";
+	ignore(
+	  gtk_ebox#event#connect#button_press
+	    ~callback:(event_break_callback n ebox.event ebox.image))
+      )
+      !current_event_boxes
+	  
+  let load_events () =
+    List.iter (fun m ->
+      if not (List.mem m !Symbols.exclude_modules) then
+	add_eboxes m (Symbols.events_in_module m) event_pixbuf)
+      !Symbols.modules;
+    show_events_from_module
+      (List.find (fun m -> not (List.mem m !Symbols.exclude_modules))
+	 !Symbols.modules)
     
-
+    
+(*
+  let show_event_in_source n ev =
+    let offset = (Events.get_pos ev).Lexing.pos_cnum + n in
+    let ebox = GBin.event_box ~show:true () in
+    ()
+*)
 end
 
 
@@ -154,12 +194,19 @@ struct
     if m <> !current_mod then
       begin
 	current_mod := m;
-	print_endline m
+	print_endline m;
+	Source_controller.source_file := Source.source_of_module Lexing.dummy_pos m;
+	Source_controller.load_source ();
+	Source_controller.show_events_from_module m
       end
 
   let load_modules () =
     Program_management.ensure_loaded ();
-    let mods = !Symbols.modules in
+    let mods =
+      List.filter
+	(fun m -> not (List.mem m !Symbols.exclude_modules))
+	!Symbols.modules
+    in
     if mods <> [] then current_mod := List.hd mods;
     List.iter
       (fun mod_name ->
@@ -233,7 +280,7 @@ let show_ui () =
   Program_management.ensure_loaded ();
   Icons_controller.add_icons ();
   Source_controller.load_source ();
-  Source_controller.load_events "Test";
+  Source_controller.load_events ();
   Modules_controller.load_modules ();
   Toplevel_controller.connect ();
   print_endline "Everything loaded";
