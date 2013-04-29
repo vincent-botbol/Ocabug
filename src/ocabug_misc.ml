@@ -61,6 +61,15 @@ let list_mapi f l =
   in
   List.rev (aux 0 [] l)
 
+let list_iteri2 f =
+  let rec aux n l1 l2 =
+    match l1, l2 with
+      | [], [] -> ()
+      | x::xs, y::ys -> f n x y; aux (n+1) xs ys
+      | _ -> raise (Invalid_argument "list_iteri2")
+  in
+  aux 0
+
 let dir_content dir =
   let file_list = ref [] in
   let handle = opendir dir in

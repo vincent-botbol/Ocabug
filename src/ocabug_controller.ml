@@ -105,37 +105,20 @@ struct
 
   (* here comes events and breakpoints icons handling *)
 
-    (* to fix event boxes offset *)
-  (*let fix_offset = let n =  ref (-1) in (fun () -> incr n; !n)*)
-
-
   open Ocabug_event_boxes
 
   let break_callback ev = fun () -> Breakpoints.new_breakpoint ev
   let event_callback n = fun () -> Breakpoints.remove_breakpoint n
 
-  let event_break_callback n ev img b =
+  let event_break_callback n ev b =
     set_or_remove_break
       (* break number incremented because call to new_event is not done yet *)
       n
       (break_callback ev)
       event_callback;
     true
-(*
-  let record_event_box n ev =
-    let offset = (Events.get_pos ev).Lexing.pos_cnum + n in
-    let ebox = GBin.event_box ~show:true () in
-    let img = GMisc.image ~pixbuf:event_pixbuf ~packing:ebox#add () in
-    (* see above *)
-    add_ebox n img ev;
-    (* inserts event box in buffer *)
-    ignore(
-      source_box#add_child_at_anchor 
-	(ebox :> GObj.widget) 
-	(source_buffer#create_child_anchor (source_buffer#get_iter (`OFFSET offset))));
-    ignore(ebox#event#connect#button_press ~callback:(event_break_callback n ev img))
-*)
 
+(*
   let show_events_from_module mdl =
     current_event_boxes := Hashtbl.find event_boxes_by_module mdl;
     List.iter
@@ -157,12 +140,34 @@ struct
 	  gtk_ebox#event#connect#button_press
 	    ~callback:(event_break_callback n ebox.event ebox.image))
       )
-      !current_event_boxes
-	  
+      !current_event_boxes;
+    Hashtbl.add source_buffer_by_module mdl source_box
+*)
+
+  let show_events_from_module mdl =
+    current_event_boxes := Hashtbl.find event_boxes_by_module mdl;
+    list_iteri
+      (fun n (_, ebox) ->
+	let offset = n + (Events.get_pos ebox.event).Lexing.pos_cnum in
+	let test_ebox = GBin.event_box ~show:true () in
+	let pix = pixbuf_from_ebox ebox in
+	ebox.image <- GMisc.image ~pixbuf:pix ~packing:test_ebox#add ();
+	ignore(
+	  source_box#add_child_at_anchor 
+	    (test_ebox :> GObj.widget) 
+	    (source_buffer#create_child_anchor
+	       (source_buffer#get_iter (`OFFSET offset))));
+	ignore(
+	  test_ebox#event#connect#button_press
+	    ~callback:(event_break_callback n ebox.event))
+      )
+      (Hashtbl.find event_boxes_by_module mdl)
+
   let load_events () =
     List.iter (fun m ->
       if not (List.mem m !Symbols.exclude_modules) then
-	add_eboxes m (Symbols.events_in_module m) event_pixbuf)
+	add_eboxes m (Symbols.events_in_module m)
+	  event_break_callback event_pixbuf)
       !Symbols.modules;
     show_events_from_module
       (List.find (fun m -> not (List.mem m !Symbols.exclude_modules))
@@ -188,6 +193,8 @@ end
 module Modules_controller =
 struct
 
+  open Source_controller
+
   let current_mod = ref ""
 
   let set_module m () =
@@ -195,9 +202,9 @@ struct
       begin
 	current_mod := m;
 	print_endline m;
-	Source_controller.source_file := Source.source_of_module Lexing.dummy_pos m;
-	Source_controller.load_source ();
-	Source_controller.show_events_from_module m
+	source_file := Source.source_of_module Lexing.dummy_pos m;
+	load_source ();
+	show_events_from_module m
       end
 
   let load_modules () =

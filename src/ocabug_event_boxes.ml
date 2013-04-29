@@ -31,10 +31,12 @@ let ebox ev img_pixbuf =
     image = GMisc.image ~pixbuf:img_pixbuf ();
     event = ev
   }
-    
-let add_eboxes mdl events img_pixbuf=
+
+let add_eboxes mdl events gtk_box_callback img_pixbuf =
   Hashtbl.add event_boxes_by_module mdl
-    (list_mapi (fun n ev -> (n, ebox ev img_pixbuf)) events)
+    (list_mapi
+       (fun n ev -> (n, ebox ev img_pixbuf))
+       events)
     
     
 let ebox_from_event ev =
@@ -133,5 +135,12 @@ let remove_highlight ev =
       ebox.image#set_pixbuf breakpoint_pixbuf
   with
     | No_such_event_box -> ()
+
+let pixbuf_from_ebox ebox =
+  match ebox.click, ebox.highlighted with
+    | true, true -> event_pixbuf2
+    | true, false -> event_pixbuf
+    | false, true -> breakpoint_pixbuf2
+    | false, false -> breakpoint_pixbuf
 
 
