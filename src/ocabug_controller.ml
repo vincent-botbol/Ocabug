@@ -31,57 +31,53 @@ struct
       end
     else
       false
-(*
-      begin
-	try
-	  ignore (Command_line.interprete_line Ocabug_config.formatter (cmd^" "^entry#text));
-	  entry#set_text "";
-	  let answer = force_read () in
-	  if answer <> "" then
-	    Command_invite.write_buffer answer;
-	with
-	  | Toplevel ->
-	    Printf.fprintf stdout "Toplevel exn caught\n%!";
-	    entry#set_text "";
-	    write (force_read ())
-	  | Command_line.Command_line ->
-	    Printf.fprintf stdout "Command_line exn caught\n%!";
-	    entry#set_text "";
-	    write (force_read ())
-      end;*)
-
+  (*
+    begin
+    try
+    ignore (Command_line.interprete_line Ocabug_config.formatter (cmd^" "^entry#text));
+    entry#set_text "";
+    let answer = force_read () in
+    if answer <> "" then
+    Command_invite.write_buffer answer;
+    with
+    | Toplevel ->
+    Printf.fprintf stdout "Toplevel exn caught\n%!";
+    entry#set_text "";
+    write (force_read ())
+    | Command_line.Command_line ->
+    Printf.fprintf stdout "Command_line exn caught\n%!";
+    entry#set_text "";
+    write (force_read ())
+    end;
+  *)
+	
 	
 
   let user_printer_callback () =
     let w = GWindow.window () in
     let packer = GPack.vbox ~packing:w#add () in
-    ignore (GText.view
-	      ~packing:packer#add
-	      ~editable:false
-	      ~cursor_visible:false
-	      ~buffer:(GText.buffer ~text:"Load printer object file (e.g : printers.cmo)" () )
-	      ()
-    );
+    ignore (GMisc.label ~text:"Load printer object file (e.g : printers.cmo)"
+	      ~packing:packer#add ());
     let e1 = GEdit.entry ~text:"" ~packing:packer#add ~editable:true () in
     ignore (e1#event#connect#key_press ~callback:(key_callback "load_printer" e1));
-    ignore (GText.view
-	      ~packing:packer#add
-	      ~editable:false
-	      ~cursor_visible:false
-	      ~buffer:(GText.buffer
-			 ~text:
-			 "Printer's path name (e.g : Printers.my_printer)\n
+    ignore (GMisc.label ~text:"Printer's path name (e.g : Printers.my_printer)
 Type must be : outchan -> t -> unit"
-			 () )
-	      ()
-    );
+	      ~packing:packer#add ());
     let e2 = GEdit.entry ~text:"" ~packing:packer#add ~editable:true () in
     ignore (e2#event#connect#key_press ~callback:(key_callback "install_printer" e2));
     w#show ()
 
-  let add_icons () =
-    Icons_viewer.link_icons icons_callbacks;
-    ignore (Icons_viewer.user_printer_button#connect#clicked user_printer_callback)
+  let set_icons_callbacks () =
+    List.iter (function 
+    | (Icons_viewer.Step, b) -> ignore(b#connect#clicked ~callback:(cmd_callback "step"))
+    | (Icons_viewer.Backstep, b) -> ignore(b#connect#clicked ~callback:(cmd_callback  "backstep"))
+    | (Icons_viewer.Run, b) -> ignore(b#connect#clicked ~callback:(cmd_callback  "run"))
+    | (Icons_viewer.Reverse, b) -> ignore(b#connect#clicked ~callback:(cmd_callback  "reverse"))
+    )
+      Icons_viewer.buttons
+      
+  let set_menu_callbacks () =
+    ignore(Menu_viewer.tools_menu_printer#connect#activate user_printer_callback)
 
 end
 
@@ -103,7 +99,7 @@ struct
     load_source_file !source_file
 
 
-  (* here comes events and breakpoints icons handling *)
+  (* here comes the events and breakpoints icons handling *)
 
   open Ocabug_event_boxes
 
@@ -248,7 +244,6 @@ struct
     adjust_window ()
 
 
-
   let key_callback key =
     let value = GdkEvent.Key.keyval key in
     if value = 65421 || value = 65293 then 
@@ -272,12 +267,6 @@ struct
 end
 
 
-
-
-
-
-
-
 (********************************
 	       MAIN
 ********************************)
@@ -285,7 +274,8 @@ end
 let show_ui () =
   print_endline "Start show_ui";
   Program_management.ensure_loaded ();
-  Icons_controller.add_icons ();
+  Icons_controller.set_icons_callbacks ();
+  Icons_controller.set_menu_callbacks ();
   Source_controller.load_source ();
   Source_controller.load_events ();
   Modules_controller.load_modules ();

@@ -9,3 +9,4 @@ src/Makefile
 src/dynlink*
 mathieu
 tests
+bin/*

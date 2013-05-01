@@ -107,9 +107,11 @@ clean::
 	$(CAMLC) -c $(COMPFLAGS) $<
 
 #####
-main.cmo: $(OBJS)
+include .depend2
 
-run: all
+main.cmo: $(OBJS) 
+
+run: ocabug$(EXE)
 	../bin/ocabug$(EXE) ../bin/test
 
 ####

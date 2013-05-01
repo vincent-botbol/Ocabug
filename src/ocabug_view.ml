@@ -1,11 +1,14 @@
 
 
+let quit () =
+  GMain.Main.quit (); exit 0  
+
 let window =   
   let w = GWindow.window 
     ~title:"OCabug"
     ~width:800
     () in 
-  ignore(w#connect#destroy ~callback:(fun () -> GMain.Main.quit (); exit 0));
+  ignore(w#connect#destroy ~callback:quit);
   w
 
 exception Commande_invite
@@ -16,6 +19,42 @@ let vbox = GPack.vbox ~packing:window#add ()
 
 
 
+(**********************************
+		 MENU
+**********************************)
+
+
+module Menu_viewer =
+struct
+  open GdkKeysyms  
+    
+  let packer = GPack.fixed 
+    ~packing:vbox#add ()
+    
+  let menu_bar = GMenu.menu_bar ~packing:packer#add ()
+  let factory = new GMenu.factory menu_bar
+
+  let () = window#add_accel_group factory#accel_group
+    
+  let file_menu = factory#add_submenu "File"
+  let ff = new GMenu.factory file_menu ~accel_group:factory#accel_group
+  let tools_menu = factory#add_submenu "Tools"
+  let tf = new GMenu.factory tools_menu ~accel_group:factory#accel_group
+  let help_menu = factory#add_submenu "Help"
+  let hf = new GMenu.factory help_menu ~accel_group:factory#accel_group
+    
+
+  (* [menu_item]#connect#activate ~callback:.. *)
+  let file_menu_quit = ff#add_item ~key:_W ~callback:quit "Quit" 
+    
+  let tools_menu_printer = tf#add_item "Set printer"
+    
+  let help_menu_about = hf#add_item 
+    ~callback:(fun () -> Printf.printf "Ocabug - credits : Mathieu Chailloux, Vincent Botbol\n%!")
+    "About..."
+    
+    
+end
 
 
 (**********************************
@@ -25,41 +64,81 @@ let vbox = GPack.vbox ~packing:window#add ()
 
 module Icons_viewer =
 struct
-
+  
   let packer = GPack.hbox ~packing:vbox#add ()
 
-  let link_icons icons_callbacks_list =
-    List.iter
-      (fun (path, callback) ->
-	let button = GButton.button ~packing:packer#add () in
-	button#set_image ((GMisc.image ~file:path ()) :> GObj.widget);
-	ignore(button#connect#clicked callback)
-      )
-      icons_callbacks_list
+  type button_kind =
+    Step | Backstep | Run | Reverse
+	
+  type button_elem =
+    (* kind, label, tooltip *)
+    button_kind * string * string 
+      
+  let get_icon_path = function
+    | Step -> "../img/icons/step.png"
+    | Backstep -> "../img/icons/backstep.png"
+    | Run -> "../img/icons/run.png"
+    | Reverse -> "../img/icons/temp/bullet_left.png"
 
-  let user_printer_button = GButton.button ~label:"user_printer" ~packing:packer#add ()
+  let toolbar = GButton.toolbar ~orientation:`HORIZONTAL
+      ~style:`BOTH_HORIZ ~border_width:5
+      ~height:40
+      ~packing:packer#add ()
+      
+  let buttons = 
+    List.map (fun ((kind, label, tooltip) : button_elem) ->
+      let b = toolbar#insert_button
+	~text:label
+	~tooltip:tooltip
+	~icon:((GMisc.image ~file:(get_icon_path kind) ()) :> GObj.widget)
+	() in
+      b#set_focus_on_click false;
+      (kind,b)
+    )
+      [ (Run, "Run", "Continue to the next breakpoint")
+      ; (Step, "Step", "Go to the next event")
+      ; (Backstep, "Backstep", "Revert to the previous event")
+      ; (Reverse, "Reverse", "Go to the beggining of the program") ]
 
 end
 
+(********************************************
+	      COMBO MODULES
+********************************************)
 
-(** separator icons / source **)
-let () = ignore(GMisc.separator `HORIZONTAL ~packing:vbox#add ())
+module Modules_combo =
+struct
 
+  let packer = GBin.alignment
+    ~padding:(2,2,2,2)
+    ~width:10
+    ~packing:(Icons_viewer.packer#add) ()
 
+  let combo = GEdit.combo ~packing:packer#add ()
 
+  let make_arrow_label ~label ~string =
+    let item = GList.list_item () in (* no packing here, it blocks GTK *)
+    let hbox = GPack.hbox ~spacing:3 ~packing:item#add () in
+    ignore(GMisc.arrow ~kind:`RIGHT ~shadow:`OUT ~packing:hbox#pack ());
+    ignore(GMisc.label ~text:label ~packing:hbox#pack ());
+    combo#set_item_string item string;
+    combo#list#add item;
+    item
+
+end
 
 
 (*******************************************
 	      SOURCE VIEWER
 *******************************************)
 
-
-     
- 
 module Source_viewer = 
 struct
-
-  let packer = vbox
+  
+  let packer = GBin.frame
+    ~border_width:5
+    ~shadow_type:`IN
+    ~packing:vbox#add ()
   
   let breakpoint_pixbuf = GdkPixbuf.from_file "../img/breakpoint.png"
   let event_pixbuf = GdkPixbuf.from_file "../img/icons/temp/bullet_plus.png"
@@ -89,7 +168,9 @@ struct
     gsw#source_buffer#set_text "(* No module loaded *)";
     gsw
       
-      (* is it useful ? *)
+  (* - is it useful ? 
+     - maybe
+  *)
   let source_buffer = source_box#source_buffer
       		 
   let load_source_file filename =
@@ -116,41 +197,6 @@ struct
     ebox
 
 end
-  
-
-
-
-(** separator source/modules *)
-let () = ignore(GMisc.separator `HORIZONTAL ~packing:vbox#add ())
-
-
-
-
-
-
-(********************************************
-	      COMBO MODULES
-********************************************)
-
-module Modules_combo =
-struct
-
-  let packer = vbox
-
-  let combo = GEdit.combo ~packing:packer#add ()
-
-  let make_arrow_label ~label ~string =
-    let item = GList.list_item () in (* no packing here, it blocks GTK *)
-    let hbox = GPack.hbox ~spacing:3 ~packing:item#add () in
-    ignore(GMisc.arrow ~kind:`RIGHT ~shadow:`OUT ~packing:hbox#pack ());
-    ignore(GMisc.label ~text:label ~packing:hbox#pack ());
-    combo#set_item_string item string;
-    combo#list#add item;
-    item
-
-end
-
-
 
 
 (*************************************************
@@ -163,13 +209,18 @@ end
 module Command_invite =
 struct
 
-  let pack_loc = vbox
-
+  let packer = 
+    let frame = GBin.frame
+      ~border_width:5
+      ~shadow_type:`IN
+      ~packing:vbox#add () in
+    GPack.vbox ~packing:frame#add ()
+      
   let end_response = '\003'
 
   let buffer = GText.buffer ~text:"[OCabug]\n" ()
 
-  let sw = GBin.scrolled_window ~packing:pack_loc#add 
+  let sw = GBin.scrolled_window ~packing:packer#add 
     ~hpolicy:`AUTOMATIC ~vpolicy:`AUTOMATIC ()
 
   let adjust_window () =
@@ -178,27 +229,45 @@ struct
 
   let last_command = ref ""
 
-  let hbox = GPack.hbox ~packing:pack_loc#add ()
+  let hbox = GPack.hbox ~packing:packer#add ()
 
   let entry = GEdit.entry ~text:"" ~packing:hbox#add ~editable:true ~width:700 ()
 
   let button =
-    ignore(GMisc.separator `HORIZONTAL ~packing:pack_loc#add ());
-    GButton.button ~label:"SEND" ~packing:hbox#add ()
-
+    let align = GBin.alignment 
+      ~packing:hbox#add () in
+    GButton.button ~label:"Send" ~packing:align#add ()
+      
   let text = GText.view ~packing:sw#add ~height:200 ~editable:false ~buffer:buffer ~cursor_visible:false ()
 
-  let write_buffer str = buffer#insert str
+  let write_buffer str = 
+    buffer#insert str
+
+(*     
+       let trim s =
+       let is_space = function
+       | ' ' | '\012' | '\n' | '\r' | '\t' -> true
+       | _ -> false in
+       let len = String.length s in
+       let i = ref 0 in
+       while !i < len && is_space (String.get s !i) do
+       incr i
+       done;
+       let j = ref (len - 1) in
+      while !j >= !i && is_space (String.get s !j) do
+       decr j
+       done;
+      if !i = 0 && !j = len - 1 then
+       s
+       else if !j >= !i then
+       String.sub s !i (!j - !i + 1)
+       else
+       ""
+*)
 
 end
 
-
-
 let write = Command_invite.write_buffer
-
-
-
-
 
 (*
 (**********************************************

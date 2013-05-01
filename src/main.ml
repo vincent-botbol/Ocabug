@@ -290,6 +290,7 @@ let main () =
       Ocabug_config.formatter
       Ocabug_controller.show_ui
       Ocabug_controller.show_ui
+      
 
     (* CHANGE : connect *)
     (*Unix.connect Socket_config.debugger_socket
