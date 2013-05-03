@@ -68,7 +68,7 @@ struct
   let packer = GPack.hbox ~packing:vbox#add ()
 
   type button_kind =
-    Step | Backstep | Run | Reverse
+    Step | Backstep | Run | Reverse | Bigstep
 	
   type button_elem =
     (* kind, label, tooltip *)
@@ -79,6 +79,7 @@ struct
     | Backstep -> "../img/icons/backstep.png"
     | Run -> "../img/icons/run.png"
     | Reverse -> "../img/icons/temp/bullet_left.png"
+    | Bigstep -> "../img/icons/temp/forward_green.png"
 
   let toolbar = GButton.toolbar ~orientation:`HORIZONTAL
       ~style:`BOTH_HORIZ ~border_width:5
@@ -96,9 +97,11 @@ struct
       (kind,b)
     )
       [ (Run, "Run", "Continue to the next breakpoint")
-      ; (Step, "Step", "Go to the next event")
+      ; (Reverse, "Reverse", "Go to the beggining of the program") 
       ; (Backstep, "Backstep", "Revert to the previous event")
-      ; (Reverse, "Reverse", "Go to the beggining of the program") ]
+      ; (Step, "Step", "Go to the next event")      
+      ; (Bigstep, "Big step", "Go the next event skipping the standard lib")
+      ]
 
 end
 

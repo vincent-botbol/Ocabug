@@ -15,12 +15,6 @@ struct
     ignore (Command_line.interprete_line Ocabug_config.formatter cmd);
     Command_invite.adjust_window ()
 
-  let icons_callbacks =
-    [ ("../img/icons/backstep.png", cmd_callback "backstep")
-    ; ("../img/icons/run.png", cmd_callback "run")
-    ; ("../img/icons/step.png", cmd_callback "step") 
-    ; ("../img/icons/temp/bullet_left.png", cmd_callback "reverse") ]
-
   let key_callback cmd entry key =
     let value = GdkEvent.Key.keyval key in
     if value = 65421 || value = 65293 then
@@ -73,6 +67,7 @@ Type must be : outchan -> t -> unit"
     | (Buttons_viewer.Backstep, b) -> ignore(b#connect#clicked ~callback:(cmd_callback  "backstep"))
     | (Buttons_viewer.Run, b) -> ignore(b#connect#clicked ~callback:(cmd_callback  "run"))
     | (Buttons_viewer.Reverse, b) -> ignore(b#connect#clicked ~callback:(cmd_callback  "reverse"))
+    | (Buttons_viewer.Bigstep, b) -> ignore(b#connect#clicked ~callback:(cmd_callback  "ocabigstep"))
     )
       Buttons_viewer.buttons
       
