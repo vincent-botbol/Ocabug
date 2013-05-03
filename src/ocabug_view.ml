@@ -220,8 +220,10 @@ struct
 
   let buffer = GText.buffer ~text:"[OCabug]\n" ()
 
-  let sw = GBin.scrolled_window ~packing:packer#add 
-    ~hpolicy:`AUTOMATIC ~vpolicy:`AUTOMATIC ()
+  let sw = let align = GBin.alignment 
+	     ~packing:packer#add () in
+	   GBin.scrolled_window ~packing:align#add 
+	     ~hpolicy:`AUTOMATIC ~vpolicy:`AUTOMATIC ()
 
   let adjust_window () =
     let adj = sw#vadjustment in
