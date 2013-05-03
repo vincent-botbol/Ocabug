@@ -62,7 +62,7 @@ end
 **********************************)
 
 
-module Icons_viewer =
+module Buttons_viewer =
 struct
   
   let packer = GPack.hbox ~packing:vbox#add ()
@@ -112,7 +112,7 @@ struct
   let packer = GBin.alignment
     ~padding:(2,2,2,2)
     ~width:10
-    ~packing:(Icons_viewer.packer#add) ()
+    ~packing:(Buttons_viewer.packer#add) ()
 
   let combo = GEdit.combo ~packing:packer#add ()
 

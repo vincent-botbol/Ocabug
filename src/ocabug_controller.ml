@@ -8,7 +8,7 @@ open Debugger_config
 
 
 
-module Icons_controller =
+module Buttons_controller =
 struct
 
   let cmd_callback cmd () =
@@ -69,12 +69,12 @@ Type must be : outchan -> t -> unit"
 
   let set_icons_callbacks () =
     List.iter (function 
-    | (Icons_viewer.Step, b) -> ignore(b#connect#clicked ~callback:(cmd_callback "step"))
-    | (Icons_viewer.Backstep, b) -> ignore(b#connect#clicked ~callback:(cmd_callback  "backstep"))
-    | (Icons_viewer.Run, b) -> ignore(b#connect#clicked ~callback:(cmd_callback  "run"))
-    | (Icons_viewer.Reverse, b) -> ignore(b#connect#clicked ~callback:(cmd_callback  "reverse"))
+    | (Buttons_viewer.Step, b) -> ignore(b#connect#clicked ~callback:(cmd_callback "step"))
+    | (Buttons_viewer.Backstep, b) -> ignore(b#connect#clicked ~callback:(cmd_callback  "backstep"))
+    | (Buttons_viewer.Run, b) -> ignore(b#connect#clicked ~callback:(cmd_callback  "run"))
+    | (Buttons_viewer.Reverse, b) -> ignore(b#connect#clicked ~callback:(cmd_callback  "reverse"))
     )
-      Icons_viewer.buttons
+      Buttons_viewer.buttons
       
   let set_menu_callbacks () =
     ignore(Menu_viewer.tools_menu_printer#connect#activate user_printer_callback)
@@ -274,8 +274,8 @@ end
 let show_ui () =
   print_endline "Start show_ui";
   Program_management.ensure_loaded ();
-  Icons_controller.set_icons_callbacks ();
-  Icons_controller.set_menu_callbacks ();
+  Buttons_controller.set_icons_callbacks ();
+  Buttons_controller.set_menu_callbacks ();
   Source_controller.load_source ();
   Source_controller.load_events ();
   Modules_controller.load_modules ();
