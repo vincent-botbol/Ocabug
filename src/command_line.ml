@@ -313,13 +313,16 @@ let instr_ocastep ppf lexbuf =
       while !cont do
 	step _1;
 	update_current_event ();
-	match !current_checkpoint.c_report with
+	match current_report () with
 	  | None -> printing_function "No report type after step\n"
 	  | Some {rep_type=Event} ->
 	    let new_ev = get_current_event() in
 	    printf "Old mod : %s | New mod %s | same? : %B\n" !ev.ev_module new_ev.ev_module (new_ev.ev_module = !ev.ev_module);
 	    if new_ev.ev_module = !ev.ev_module then
 	      cont := false
+	  | Some {rep_type = Exited} ->
+	    show_no_point ppf;
+	    cont := false
 	  | _ -> printing_function "Report type different from Event";cont:=false
       done;
       show_current_event ppf
@@ -335,11 +338,14 @@ let instr_ocabigstep ppf lexbuf =
   while !cont do
     step _1;
     update_current_event();
-    if not (List.mem (get_current_event()).ev_module !exclude_modules) then
-      cont := false;
-    match !current_checkpoint.c_report with
+    match current_report () with
       | None -> printing_function "No report type after step\n"
-      | Some {rep_type=Event} -> ()
+      | Some {rep_type=Event} ->
+	if not (List.mem (get_current_event()).ev_module !exclude_modules) then
+	  cont := false;
+      | Some {rep_type = Exited} ->
+	show_no_point ppf;
+	cont := false
       | _ -> printing_function "Report type different from Event";cont:=false
   done;
   show_current_event ppf
