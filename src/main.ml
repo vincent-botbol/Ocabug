@@ -53,7 +53,7 @@ let rec protect ppf restart loop =
         pp_print_flush ppf ();
         stop_user_input ();
         restart ppf)
-  | Sys.Break ->
+ | Sys.Break ->
       protect ppf restart (function ppf ->
         fprintf ppf "Interrupted.@.";
         Exec.protect (function () ->
@@ -288,9 +288,8 @@ let main () =
     Format.set_formatter_out_channel Ocabug_config.outchan;
     my_protect
       Ocabug_config.formatter
+      Ocabug_controller.window_show
       Ocabug_controller.show_ui
-      Ocabug_controller.show_ui
-      
 
     (* CHANGE : connect *)
     (*Unix.connect Socket_config.debugger_socket

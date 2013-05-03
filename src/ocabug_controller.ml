@@ -3,13 +3,16 @@ open Ocabug_misc
 open Debugger_config
 
 (**************************
-	    ICONS
+	    BUTTONS
 **************************)
 
 
 
 module Buttons_controller =
 struct
+
+  let skip_library = ref true
+  let step_callback_id = ref None
 
   let cmd_callback cmd () =
     ignore (Command_line.interprete_line Ocabug_config.formatter cmd);
@@ -63,16 +66,33 @@ Type must be : outchan -> t -> unit"
 
   let set_icons_callbacks () =
     List.iter (function 
-    | (Buttons_viewer.Step, b) -> ignore(b#connect#clicked ~callback:(cmd_callback "step"))
+    | (Buttons_viewer.Step, b) -> step_callback_id := 
+      Some(b#connect#clicked ~callback:(cmd_callback (if !skip_library then "ocabigstep" else "step")))
     | (Buttons_viewer.Backstep, b) -> ignore(b#connect#clicked ~callback:(cmd_callback  "backstep"))
     | (Buttons_viewer.Run, b) -> ignore(b#connect#clicked ~callback:(cmd_callback  "run"))
     | (Buttons_viewer.Reverse, b) -> ignore(b#connect#clicked ~callback:(cmd_callback  "reverse"))
     | (Buttons_viewer.Bigstep, b) -> ignore(b#connect#clicked ~callback:(cmd_callback  "ocabigstep"))
     )
       Buttons_viewer.buttons
+
+  let switch_step_command_callback () =
+    try 
+      let (_, b) = List.find (function (Buttons_viewer.Step, _) -> true | _ -> false) Buttons_viewer.buttons in
+      match !step_callback_id with
+      | Some id -> 
+	(*GtkSignal.disconnect (b#obj) id; disconnect event ??*)
+	skip_library := not !skip_library;
+	step_callback_id := Some (b#connect#clicked 
+	  ~callback:(cmd_callback (if !skip_library then "ocabigstep" else "step")))
+      | None -> ()
+    with
+      Not_found -> assert false
       
+
   let set_menu_callbacks () =
-    ignore(Menu_viewer.tools_menu_printer#connect#activate user_printer_callback)
+    ignore(Menu_viewer.tools_menu_printer#connect#activate user_printer_callback);
+    ignore(Menu_viewer.tools_menu_step_choice#connect#toggled switch_step_command_callback)
+
 
 end
 
@@ -266,6 +286,11 @@ end
 	       MAIN
 ********************************)
 
+let window_show () =
+  window#show ();
+  GMain.Main.main ()
+
+
 let show_ui () =
   print_endline "Start show_ui";
   Program_management.ensure_loaded ();
@@ -276,6 +301,5 @@ let show_ui () =
   Modules_controller.load_modules ();
   Toplevel_controller.connect ();
   print_endline "Everything loaded";
-  window#show ();
-  GMain.Main.main ()
+  window_show ()
   

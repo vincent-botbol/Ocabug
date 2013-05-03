@@ -9,3 +9,6 @@ src/Makefile
 src/dynlink*
 mathieu
 bin/*
+
+*.aux
+*.log

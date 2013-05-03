@@ -48,6 +48,9 @@ struct
   let file_menu_quit = ff#add_item ~key:_W ~callback:quit "Quit" 
     
   let tools_menu_printer = tf#add_item "Set printer"
+
+  let tools_menu_step_choice = tf#add_check_item
+    ~active:true "Skip standard libraries on step"
     
   let help_menu_about = hf#add_item 
     ~callback:(fun () -> Printf.printf "Ocabug - credits : Mathieu Chailloux, Vincent Botbol\n%!")

@@ -112,7 +112,7 @@ include .depend2
 main.cmo: $(OBJS) 
 
 run: ocabug$(EXE)
-	../bin/ocabug$(EXE) ../bin/test
+	../bin/ocabug$(EXE) ../tests/test
 
 ####
 

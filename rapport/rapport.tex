@@ -1,0 +1,70 @@
+\documentclass[11pt,a4paper]{report}
+
+\evensidemargin=0cm
+\oddsidemargin=0cm
+\topmargin=-1cm
+\textheight=23.5cm
+\leftmargin=0cm
+\textwidth=18cm
+\sloppy
+\flushbottom
+\parindent 1em
+\hoffset -0.5in
+\oddsidemargin  0pt
+\evensidemargin 0pt
+\marginparsep 10pt
+
+\usepackage[utf8]{inputenc}
+\usepackage[frenchb]{babel}
+\usepackage[T1]{fontenc}
+
+\usepackage{listings}
+\usepackage{color}
+\definecolor{lightgray}{rgb}{.9,.9,.9}
+\definecolor{darkgray}{rgb}{.4,.4,.4}
+\definecolor{purple}{rgb}{0.65, 0.12, 0.82}
+
+\lstnewenvironment{OCaml}
+                  {\lstset{
+                      language=[Objective]Caml,
+                      breaklines=true,
+                      commentstyle=\color{purple},
+                      stringstyle=\color{red},
+                      identifierstyle=\ttfamily,
+                      keywordstyle=\color{blue},
+                      basicstyle=\footnotesize
+                    }  
+                  }
+                  {}
+
+\title{Rapport de projet\\Débogueur Visuel pour OCaml}
+\author{Mathieu Chailloux\\Vincent Botbol}
+\date\today
+
+\begin{document}
+\maketitle
+
+\chapter{Introduction}
+% motivations, ...
+
+\chapter{Ocamldebug}
+
+\section{Présentation}
+\section{\'Evénements de déboguage}
+\section{}
+\section{Limitations} % transition
+
+
+\chapter{OCabug}
+
+%\section{Lablgtk}
+\section{Présentation de l'interface} %?
+\section{Extensions et améliorations}
+
+
+
+\chapter{Annexes}
+
+\section{Exemples}
+
+\end{document}
