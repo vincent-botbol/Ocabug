@@ -80,7 +80,7 @@ Type must be : outchan -> t -> unit"
       let (_, b) = List.find (function (Buttons_viewer.Step, _) -> true | _ -> false) Buttons_viewer.buttons in
       match !step_callback_id with
       | Some id -> 
-	(*GtkSignal.disconnect (b#obj) id; disconnect event ??*)
+	b#misc#disconnect id;
 	skip_library := not !skip_library;
 	step_callback_id := Some (b#connect#clicked 
 	  ~callback:(cmd_callback (if !skip_library then "ocabigstep" else "step")))
