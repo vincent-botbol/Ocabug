@@ -31,7 +31,8 @@ let force_write () =
   Ocabug_view.Command_invite.adjust_window ()
 
 let printing_function str =
-  Ocabug_view.write (str^"\n");
+  if str <> "" then
+    Ocabug_view.write (str^"\n");
   Ocabug_view.Command_invite.adjust_window ()
 
 let print_error = printing_function

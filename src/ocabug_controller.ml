@@ -286,13 +286,13 @@ end
 	       MAIN
 ********************************)
 
+
 let window_show () =
   window#show ();
   GMain.Main.main ()
 
 
 let show_ui () =
-  print_endline "Start show_ui";
   Program_management.ensure_loaded ();
   Buttons_controller.set_icons_callbacks ();
   Buttons_controller.set_menu_callbacks ();
@@ -300,6 +300,5 @@ let show_ui () =
   Source_controller.load_events ();
   Modules_controller.load_modules ();
   Toplevel_controller.connect ();
-  print_endline "Everything loaded";
   window_show ()
   

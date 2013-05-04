@@ -20,6 +20,7 @@ val socket_name : string ref
 val arguments : string ref
 val default_load_path : string list ref
 
+val add_program_dir : unit -> unit
 val add_path : string -> unit
 val add_path_for : string -> string -> unit
 

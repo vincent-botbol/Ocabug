@@ -27,6 +27,13 @@ let arguments = ref ""
 let default_load_path =
   ref [ Filename.current_dir_name; Config.standard_library ]
 
+let add_program_dir () =
+  print_endline !program_name;
+  if Sys.file_exists !program_name then
+    let dir = Filename.dirname !program_name in
+    if not (List.mem dir !load_path) then
+      load_path := dir :: !load_path
+
 let add_path dir =
   load_path := dir :: except dir !load_path;
   Envaux.reset_cache()

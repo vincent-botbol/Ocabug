@@ -25,6 +25,7 @@ open Frames
 open Show_information
 open Format
 open Primitives
+open Ocabug_misc
 
 (*
 let line_buffer = Lexing.from_function read_user_input
@@ -281,11 +282,15 @@ let main () =
         arguments := !arguments ^ " " ^ (Filename.quote Sys.argv.(j))
       done
     end;
-    printf "\tObjective Caml VISUAL Debugger version 0.9.\n%!";
+    printing_function "\tObjective Caml VISUAL Debugger version 0.9.\n";
     Config.load_path := !default_load_path;
     Clflags.recursive_types := true;    (* Allow recursive types. *)
 
     Format.set_formatter_out_channel Ocabug_config.outchan;
+    (* adds argument's directory if not already added *)
+    add_program_dir ();
+
+    (* main *)
     my_protect
       Ocabug_config.formatter
       Ocabug_controller.window_show
