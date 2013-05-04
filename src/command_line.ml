@@ -307,25 +307,32 @@ let instr_ocastep ppf lexbuf =
   reset_named_values();
   if current_time() > _0 then
     begin
-      let ev = ref (get_current_event ()) in
-      print_endline "aight";
-      let cont = ref true in
-      while !cont do
-	step _1;
-	update_current_event ();
-	match current_report () with
-	  | None -> printing_function "No report type after step\n"
-	  | Some {rep_type=Event} ->
-	    let new_ev = get_current_event() in
-	    printf "Old mod : %s | New mod %s | same? : %B\n" !ev.ev_module new_ev.ev_module (new_ev.ev_module = !ev.ev_module);
-	    if new_ev.ev_module = !ev.ev_module then
-	      cont := false
-	  | Some {rep_type = Exited} ->
-	    show_no_point ppf;
-	    cont := false
-	  | _ -> printing_function "Report type different from Event";cont:=false
-      done;
-      show_current_event ppf
+      try
+	let ev = ref (get_current_event ()) in
+	let cont = ref true in
+	while !cont do
+	  step _1;
+	  update_current_event ();
+	  match current_report () with
+	    | None -> printing_function "No report type after ocastep\n"
+	    | Some {rep_type=Event} ->
+	      let new_ev = get_current_event() in
+	      if new_ev.ev_module = !ev.ev_module then
+		begin
+		  cont := false;
+		  show_current_event ppf
+		end
+	    | Some {rep_type = Exited} ->
+	      raise Exit
+	    | _ ->
+	      printing_function "Report type different from Event";
+	      cont:=false
+	done
+      with
+	| Not_found -> show_no_point ppf
+    (* no current event cause program's end has been reached *)
+	| Exit -> show_no_point ppf
+    (* we have just reached end of program *)
     end
   else
     instr_step ppf lexbuf

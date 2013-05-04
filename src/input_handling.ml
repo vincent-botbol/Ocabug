@@ -96,7 +96,7 @@ let current_prompt = ref ""
 (* Where the user input come from. *)
 
 (* CHANGE *)
-let user_channel = ref std_io
+let user_channel = ref ocabug_io
 
 let read_user_input buffer length =
   main_loop ();

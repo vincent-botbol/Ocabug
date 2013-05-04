@@ -27,12 +27,15 @@ let force_read () =
 let force_write () =
   let answer = force_read () in
   if answer <> "" then
-    Ocabug_view.write (answer^"\n");
+    Ocabug_view.write answer;
   Ocabug_view.Command_invite.adjust_window ()
 
 let printing_function str =
   Ocabug_view.write (str^"\n");
   Ocabug_view.Command_invite.adjust_window ()
+
+let print_error = printing_function
+
 (*
   Printf.fprintf outchan "%s%!" str;
   force_write ()
@@ -83,7 +86,8 @@ let dir_content dir =
   with
     | End_of_file -> !file_list
 
-
+(*
+(* ATTENTION CONFLIT AVEC source.ml *)
 let source_of_module mdl = (String.uncapitalize mdl) ^ ".ml"
 
 let module_of_source src = 
@@ -96,3 +100,4 @@ let module_of_source src =
       Printf.printf "File not found %s\n%!" src;
       failwith "come in Ocabug_misc.module_of_source"
     end
+*)

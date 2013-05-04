@@ -249,7 +249,7 @@ struct
   let text = GText.view ~packing:sw#add ~height:200 ~editable:false ~buffer:buffer ~cursor_visible:false ()
 
   let write_buffer str = 
-    buffer#insert str
+    buffer#insert ("$ " ^ str)
 
 (*     
        let trim s =

@@ -25,6 +25,7 @@ open Input_handling
 open Question
 open Program_loading
 open Time_travel
+open Ocabug_misc
 
 (*** Connection opening and control. ***)
 
@@ -36,11 +37,8 @@ let buffer = String.create 1024
 let control_connection pid fd =
   if (read fd.io_fd buffer 0 1024) = 0 then
     forget_process fd pid
-  else begin
-    prerr_string "Garbage data from process ";
-    prerr_int pid;
-    prerr_endline ""
-    end
+  else
+    print_error (Printf.sprintf "Garbage data from process %d" pid)
 
 (* Accept a connection from another process. *)
 let accept_connection continue fd =
@@ -117,15 +115,15 @@ let ask_kill_program () =
 
 let initialize_loading () =
   if !debug_loading then
-    prerr_endline "Loading debugging information...";
+    print_error "Loading debugging information...";
   begin try access !program_name [F_OK]
   with Unix_error _ ->
-    prerr_endline "Program not found.";
+    print_error "Program not found.";
     raise Toplevel;
   end;
   Symbols.read_symbols !program_name;
   if !debug_loading then
-    prerr_endline "Opening a socket...";
+    print_error "Opening a socket...";
   open_connection !socket_name
     (function () ->
       go_to _0;
@@ -135,20 +133,19 @@ let initialize_loading () =
 (* Ensure the program is already loaded. *)
 let ensure_loaded () =
   if not !loaded then begin
-    print_string "Loading program... ";
-    flush Pervasives.stdout;
+    printing_function "Loading program... ";
     if !program_name = "" then begin
-      prerr_endline "No program specified.";
+      print_error "No program specified.";
       raise Toplevel
     end;
     try
       initialize_loading();
       !launching_func ();
       if !debug_loading then
-        prerr_endline "Waiting for connection...";
+        print_error "Waiting for connection...";
       main_loop ();
       loaded := true;
-      prerr_endline "done.";
+      printing_function "Program loaded";
     with
       x ->
         kill_program();

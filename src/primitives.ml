@@ -137,4 +137,12 @@ let std_io = {
   io_fd = Unix.stdin
   }
 
+open Ocabug_config
+
+let ocabug_io = {
+  io_in = inchan; (* Entrée par le GEntry *)
+  io_out = outchan;  (* Sortie sur le GText *)
+  io_fd = pipe_in
+}
+
 

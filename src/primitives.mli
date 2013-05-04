@@ -63,3 +63,4 @@ type io_channel = {
 val io_channel_of_descr : Unix.file_descr -> io_channel
 val close_io : io_channel -> unit
 val std_io : io_channel
+val ocabug_io : io_channel

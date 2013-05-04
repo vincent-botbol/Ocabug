@@ -21,7 +21,7 @@ open Primitives
 (* The current connection with the debuggee *)
 
 (* CHANGE *)
-let conn = ref Primitives.std_io
+let conn = ref Primitives.ocabug_io
 
 (* Set which process the debugger follows on fork. *)
 
