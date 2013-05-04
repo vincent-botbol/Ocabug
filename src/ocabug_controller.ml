@@ -71,7 +71,7 @@ Type must be : outchan -> t -> unit"
     | (Buttons_viewer.Backstep, b) -> ignore(b#connect#clicked ~callback:(cmd_callback  "backstep"))
     | (Buttons_viewer.Run, b) -> ignore(b#connect#clicked ~callback:(cmd_callback  "run"))
     | (Buttons_viewer.Reverse, b) -> ignore(b#connect#clicked ~callback:(cmd_callback  "reverse"))
-    | (Buttons_viewer.Bigstep, b) -> ignore(b#connect#clicked ~callback:(cmd_callback  "ocabigstep"))
+    | (Buttons_viewer.Bigstep, b) -> ignore(b#connect#clicked ~callback:(cmd_callback  "ocastep"))
     )
       Buttons_viewer.buttons
 

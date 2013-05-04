@@ -103,7 +103,7 @@ struct
       ; (Reverse, "Reverse", "Go to the beggining of the program") 
       ; (Backstep, "Backstep", "Revert to the previous event")
       ; (Step, "Step", "Go to the next event")      
-      ; (Bigstep, "Big step", "Go the next event skipping the standard lib")
+      ; (Bigstep, "Big step", "Go the next event in the current module")
       ]
 
 end
