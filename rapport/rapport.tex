@@ -18,6 +18,8 @@
 \usepackage[frenchb]{babel}
 \usepackage[T1]{fontenc}
 
+\usepackage{graphicx}
+
 \usepackage{listings}
 \usepackage{color}
 \definecolor{lightgray}{rgb}{.9,.9,.9}
@@ -56,7 +58,7 @@ outils supplémentaires facilitant l'emploi du logiciel.
 Pour expliciter les forces et les faiblesses d'\emph{ocamldebug}, nous détaillerons, dans une première partie:
 l'utilisation de cet outil et son fonctionnement interne.
 
-Nous présenterons ensuite notre outil, les extensions développées et certaines possibilités d'améliorations.
+Nous présenterons ensuite notre outil, les extensions développées et certaines de ses possibilités d'améliorations.
 
 \chapter{Ocamldebug}
 
@@ -69,11 +71,54 @@ Nous présenterons ensuite notre outil, les extensions développées et certaine
 \chapter{OCabug}
 
 %intro : ce qu'on a fait
-%présentation des différentes extensions, installation
+%présentation des différentes extensions, installation, ocaml 3.12...
 
 \section{Présentation de l'interface}
+
+L'interface graphique de l'application a entièrement été réalisée avec LablGtk, le ``binding'' de Gtk pour OCaml.
+Elle assure un confort visuel à l'utilisateur en permettant un accès rapide aux commandes les plus utilisées ainsi
+que l'observation directe des différents fichiers sources permettant de constater la position courante 
+et des différents ``breakpoints'' du programme. Le toplevel d'ocamldebug est également présent pour afficher
+les différentes actions du débogueur et les sorties textuelles engendrées.
+
+\includegraphics{screen_exec}
+
+\begin{enumerate}
+\item Barre d'outils et séléction du module à afficher
+\item Affichage du fichier source du module courrant enrichi des événements de débogage activable
+\item Informations textuelles et invite de commande
+\end{enumerate}
+
+L'utilisateur a activé deux ``breakpoints'' en cliquant sur les ``+'' présent dans l'affichage du source.
+Il démarre ensuite le programme en appuyant sur \emph{Run} qui s'arrête au premier breakpoint rencontré,
+changeant temporairement son icône ``Stop'' par un ``X'' rouge.
+
+\subsection{Barre d'outils}
+
+Les différents boutons incluent dans la barre d'outils réunissent les commandes les plus communes lors de l'utilisation:
+\begin{itemize}
+\item Run -- Permet de lancer le programme. Celui-ci s'arrêtera lorsqu'un breakpoint sera rencontré ou simplement à la fin du programme.
+\item Reverse -- Action symétrique au Run; Parcours le programme en sens inverse toujours en s'arrêtant au breakpoint ou au début du programme.
+\item Backstep -- Recule d'un événement de débogage.
+\item Step -- Avance d'un événement de débogage
+\item Big step -- Avance au prochain événement en omettant ceux de module différent.
+\item Liste des modules -- Permet de basculer l'affichage des différents fichiers sources présents.
+\end{itemize}
+
+\subsection{Code source}
+
+Le panneau affichant le code source a plusieurs emplois. Premièrement, la visualisation
+du code source des différents modules du programme. Il permet également de poser des
+breakpoints dans le code au niveau des événements du débogage.
+
+% todo : code visuels des icones
+
+\subsection{Toplevel}
+
+
 %transition toplevel -> ocamldebug
 \section{Placement par rapport à Ocamldebug}
+%les fonctionnalités originelles sont intactes => toplevel
 %organisation du code - couche d'ocamldebug
 %nécessite le compilo + lablgtk
 \section{Implémentation des extensions}

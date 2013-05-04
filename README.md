@@ -2,8 +2,7 @@ Ocabug
 ======
 
 TODO:
-- Améliorer l'interface graphique : Toplevel (+ les délires de layout sur resize)
-- Ajouter un bouton "Bigstep"
+- Big step omet les breakp des modules différents
 - Compter le nombre de passage sur un event
   (pour cela, il faut toucher à internal_step dans time_travel.ml et ne faire des step que de 1 mais n fois plutôt qu'un step de n)
 - Détecter le changement de thread dans la VM
