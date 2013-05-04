@@ -1,5 +1,6 @@
 open Input_handling
 open Primitives
+open Ocabug_misc
 
 (* Ask user a yes or no question. *)
 let yes_or_no message =
@@ -18,8 +19,7 @@ let yes_or_no message =
                 'y' -> true
               | 'n' -> false
               | _ ->
-                print_string "Please answer y or n.";
-                print_newline ();
+                printing_function "Please answer y or n.";
                 ask ()
           in
             ask ()

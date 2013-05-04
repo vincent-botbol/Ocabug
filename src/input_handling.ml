@@ -17,6 +17,7 @@
 
 open Unix
 open Primitives
+open Ocabug_misc
 
 (*** Actives files. ***)
 
@@ -109,9 +110,7 @@ let stop_user_input () =
 (* Resume reading user input. *)
 let resume_user_input () =
   if not (List.mem_assoc !user_channel.io_fd !active_files) then begin
-    if !interactif then begin
-      print_string !current_prompt;
-      flush Pervasives.stdout
-      end;
+    if !interactif then
+      printing_function !current_prompt;
     add_file !user_channel exit_main_loop
-    end
+  end
