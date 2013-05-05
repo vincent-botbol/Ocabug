@@ -2,7 +2,11 @@ Ocabug
 ======
 
 TODO:
-- Big step omet les breakp des modules différents
+- ajout des filtres
+- switch automatique du module lorsque l'on passe dedans
+- adaptation de la position du code source à l'event courant
+- surligner l'expression courante
+
 - Compter le nombre de passage sur un event
   (pour cela, il faut toucher à internal_step dans time_travel.ml et ne faire des step que de 1 mais n fois plutôt qu'un step de n)
 - Détecter le changement de thread dans la VM

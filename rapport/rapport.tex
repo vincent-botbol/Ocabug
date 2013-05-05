@@ -38,6 +38,18 @@
                     }  
                   }
                   {}
+\lstnewenvironment{C}
+                  {\lstset{
+                      language=C
+                      breaklines=true,
+                      commentstyle=\color{purple},
+                      stringstyle=\color{red},
+                      identifierstyle=\ttfamily,
+                      keywordstyle=\color{blue},
+                      basicstyle=\footnotesize
+                    }  
+                  }
+                  {}
 
 \title{Rapport de projet\\Débogueur Visuel pour OCaml}
 \author{Mathieu Chailloux\\Vincent Botbol}
@@ -48,12 +60,16 @@
 
 \chapter{Introduction}
 
-Bien que le langage OCaml soit considéré comme un langage sûr de par la sécurité de son typage statique et fort,
+Bien que le langage OCaml soit considéré comme un langage sûr de par la sécurité de son typage statique et fort, % trouver +
 l'utilisateur n'est pas à l'abri de problèmes algorithmique ou ... . La distribution de base du langage inclut %todo
 un débogueur, \emph{ocamldebug}, en ligne de commande. Cependant, son utilisation est parfois mal adaptée au besoin du programmeur.
 
 Notre projet tente de répondre à ces problèmes en apportant au débogueur une interface graphique simple ainsi quelques
-outils supplémentaires facilitant l'emploi du logiciel.
+outils supplémentaires facilitant l'emploi du logiciel. Nous nous approchons d'outils similaires
+tel que \emph{ddd} pour \emph{gdb}, l'interface graphique du célèbre débogueur pour le langage C. Notre logiciel se concentre
+principalement sur l'aspect ergonomique d'un  bien qu'une grande partie de notre travail visa à améliorer certains
+aspects du débogueur déjà présent.
+% ^ tourner ça plus correctement
 
 Pour expliciter les forces et les faiblesses d'\emph{ocamldebug}, nous détaillerons, dans une première partie:
 l'utilisation de cet outil et son fonctionnement interne.
@@ -63,6 +79,11 @@ Nous présenterons ensuite notre outil, les extensions développées et certaine
 \chapter{Ocamldebug}
 
 \section{Présentation}
+
+%topo
+%exemple d'utilisation
+%liste des commandes
+
 \section{\'Evénements de débogage}
 \section{Communication avec la machine virtuelle}
 \section{Limitations et inconvénients} % transition
@@ -72,6 +93,8 @@ Nous présenterons ensuite notre outil, les extensions développées et certaine
 
 %intro : ce qu'on a fait
 %présentation des différentes extensions, installation, ocaml 3.12...
+%patch du compilo
+
 
 \section{Présentation de l'interface}
 
@@ -85,7 +108,7 @@ les différentes actions du débogueur et les sorties textuelles engendrées.
 
 \begin{enumerate}
 \item Barre d'outils et séléction du module à afficher
-\item Affichage du fichier source du module courrant enrichi des événements de débogage activable
+\item Affichage du fichier source du module courrant enrichi des événements de débogage activables
 \item Informations textuelles et invite de commande
 \end{enumerate}
 
@@ -107,26 +130,75 @@ Les différents boutons incluent dans la barre d'outils réunissent les commande
 
 \subsection{Code source}
 
-Le panneau affichant le code source a plusieurs emplois. Premièrement, la visualisation
-du code source des différents modules du programme. Il permet également de poser des
-breakpoints dans le code au niveau des événements du débogage.
+Le panneau du code source a d'autres emplois que la simple visualisation du programme. 
+Il permet également à l'utilisateur de poser des breakpoints dans le code au niveau des événements du débogage.
 
-% todo : code visuels des icones
+Chaque icône a sa signification particulière:
+\begin{itemize}
+\item Symbole ``+'' vert -- \'Evénement de débogage: un click active la pose d'un breakpoint à cet endroit du code
+\item Symbole ``+'' gris entouré -- Position actuelle du programme
+\item Panneau ``Stop'' -- Breakpoint actif: un click le retire
+\item Croix rouge -- Position actuelle du programme ayant atteint un breakpoint
+\end{itemize}
 
 \subsection{Toplevel}
 
+La console affichant le toplevel permet à l'utilisateur de constater les différents affichages du programme
+et du débugueur. Les commandes entrées par l'utilisateur dans la zone de saise sont interprétées de la même
+manière que pour ``ocamldebug'' en supportant également nos propres commandes.
 
-%transition toplevel -> ocamldebug
 \section{Placement par rapport à Ocamldebug}
-%les fonctionnalités originelles sont intactes => toplevel
-%organisation du code - couche d'ocamldebug
-%nécessite le compilo + lablgtk
-\section{Implémentation des extensions}
-\section{Améliorations possibles}
 
+Notre implémentation se base sur le noyau d'``ocamldebug''. Nous avons repris le code originel et
+avons adapter les mécanismes d'entrées/sorties console pour les convertir à une utilisation
+graphique. Il nous a ensuite fallu lié les différents composants de l'interface aux fonctions du débogueur
+tout en maintenant une cohérence entre les commandes entrées manuellement et l'utilisation de l'interface.
+Nous maintenons ainsi toutes les fonctionnalités originelles du débogueur. 
+
+La modification du noyau est restée nécessaire pour pouvoir nous permettre d'ajouter nos propres commandes.
+...
+
+%nécessite le compilo + lablgtk (ici?)
+\section{Implémentation des extensions}
+
+Nous avons principalement deux extensions à notre disposition.
+Premièrement, la commande ``Big step''. A plusieurs moments, le programmeur ne
+peut ne pas souhaiter se déplacer dans des modules externes lors d'un débogage.
+Notre commande considère alors le module courant et passe au prochain événement
+qu'il rencontrera dans ce même module.
+
+Techniquement, cette commande agit de la même manière qu'un ``step'' en vérifiant 
+en plus, à chaque avancement, que l'événement appartient bien au même module. 
+Si ça n'est pas le cas, on continue jusqu'à ce que la condition soit satisfaite.
+
+Nous disposons également d'une instruction de déplacement filtrant les modules
+appartenant à la librairie standard. En effet, la plupart du temps, nous ne souhaitons
+pas rentrer dans le code de la bibliothèque standard. Nous pouvons ainsi nous abstraire
+des différentes fonctions que l'utilisateur considère comme sûres pour nous consacrer
+exclusivement au code en cours de débogage. On peut noter aussi la présence d'une option
+pour ajouter ou enlever des modules à la liste des filtres actifs. 
+
+Pour implémenter un tel comportement, nous récupérons tout d'abord la liste des modules standards
+d'OCaml grâce à la variable d'environnement contenant le chemin vers leur dossier. Nous pouvons ensuite
+filtrer selon le module de l'événement atteint si celui-ci est éligible ou non.
+% + ?
+
+Ce comportement concerne le bouton ``step'' de l'interface et est activé par défaut. 
+Ceci peut, à tout moment, être modifié via le menu de l'application.
+
+\section{Améliorations possibles}
+%threads
+%compteur
+
+\chapter{Conclusion}
+
+%whine sur le bordel que c'était
+%compréhension du débogueur
+%adaptation d'ocamldebug
 
 \chapter{Annexes}
 
 \section{Exemples}
+\section{Liste des commandes}
 
 \end{document}
