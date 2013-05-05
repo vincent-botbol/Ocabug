@@ -176,13 +176,12 @@ struct
 
   let load_events () =
     List.iter (fun m ->
-      if not (List.mem m !Symbols.exclude_modules) then
 	add_eboxes m (Symbols.events_in_module m)
 	  event_break_callback event_pixbuf)
       !Symbols.modules;
-    show_events_from_module
+    (*show_events_from_module
       (List.find (fun m -> not (List.mem m !Symbols.exclude_modules))
-	 !Symbols.modules)
+	 !Symbols.modules)*)
     
     
 (*
@@ -205,11 +204,12 @@ module Modules_controller =
 struct
 
   open Source_controller
+  open Symbols
 
   let current_mod = ref ""
 
   let set_module m () =
-    if m <> !current_mod then
+    if m <> !current_mod && List.mem m !active_modules then
       begin
 	current_mod := m;
 	print_endline m;
@@ -219,19 +219,23 @@ struct
       end
 
   let load_modules () =
-    Program_management.ensure_loaded ();
-    let mods =
+    exclude_modules :=
+      List.map
+      (fun s -> String.capitalize (Filename.chop_extension s))
+      (Ocabug_misc.dir_content (Config.standard_library));
+    active_modules := 
       List.filter
-	(fun m -> not (List.mem m !Symbols.exclude_modules))
-	!Symbols.modules
-    in
-    if mods <> [] then current_mod := List.hd mods;
+	(fun m -> not (List.mem m !exclude_modules))
+	!modules;
     List.iter
       (fun mod_name ->
 	let item = Modules_combo.make_arrow_label ~label:mod_name ~string:mod_name in
 	ignore (item#connect#select ~callback:(set_module mod_name))
       )
-      mods
+      !active_modules;
+    if !active_modules <> [] then current_mod := List.hd !active_modules;
+    show_events_from_module !current_mod;
+    Modules_combo.switch_module_callback := set_module;
 
 end
 

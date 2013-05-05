@@ -19,6 +19,9 @@ val modules : string list ref
 (* Modules excluded from ocabug big step (TO NAME) *)
 val exclude_modules : string list ref
 
+(* Modules used by the program and not excluded *)
+val active_modules : string list ref
+
 (* Read debugging info from executable file *)
 val read_symbols : string -> unit
 

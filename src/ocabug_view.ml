@@ -131,6 +131,10 @@ struct
     combo#list#add item;
     item
 
+  let switch_module_callback =
+    ref (fun (s : string) () ->
+      print_endline "Ocabug_view.Modules_combo.switch_module_callback")
+
 end
 
 

@@ -32,16 +32,19 @@ let get_pos ev =
 let current_event =
   ref (None : debug_event option)
 
+
+
 let set_current_event (ev : debug_event option) =
   begin
-    match !current_event with
-      | None -> ()
-      | Some e -> remove_highlight e
-  end;
-  begin
-  match ev with
-    | None -> ()
-    | Some e -> highlight e
+    match !current_event, ev with
+      | Some e, None -> remove_highlight e
+      | None, Some e -> highlight e
+      | Some e, Some e' ->
+	remove_highlight e;
+	highlight e';
+	if e.ev_module <> e'.ev_module then
+	  !Ocabug_view.Modules_combo.switch_module_callback e'.ev_module ()
+      | _ -> ()
   end;
   current_event := ev
 
