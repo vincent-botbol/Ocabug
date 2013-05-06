@@ -28,28 +28,7 @@ struct
       end
     else
       false
-  (*
-    begin
-    try
-    ignore (Command_line.interprete_line Ocabug_config.formatter (cmd^" "^entry#text));
-    entry#set_text "";
-    let answer = force_read () in
-    if answer <> "" then
-    Command_invite.write_buffer answer;
-    with
-    | Toplevel ->
-    Printf.fprintf stdout "Toplevel exn caught\n%!";
-    entry#set_text "";
-    write (force_read ())
-    | Command_line.Command_line ->
-    Printf.fprintf stdout "Command_line exn caught\n%!";
-    entry#set_text "";
-    write (force_read ())
-    end;
-  *)
 	
-	
-
   let user_printer_callback () =
     let w = GWindow.window () in
     let packer = GPack.vbox ~packing:w#add () in
@@ -87,12 +66,57 @@ Type must be : outchan -> t -> unit"
       | None -> ()
     with
       Not_found -> assert false
+       let create_mod_list list labelframe packer =
+    let cols = new GTree.column_list in
+    let mod_col = cols#add Gobject.Data.string in
+    let store = GTree.list_store cols in
+    let tree_view = 
+      let frame =
+	GBin.frame ~border_width:5
+	  ~label:labelframe
+	  ~shadow_type:`IN
+	  ~packing:packer#add () in
+      let sw = GBin.scrolled_window ~packing:frame#add () in
+      GTree.view ~model:store ~reorderable:true
+	~packing:sw#add () in
+    ignore(
+      tree_view#append_column
+	(GTree.view_column ~title:"Module"
+	   ~renderer:(GTree.cell_renderer_text [], [ "text", mod_col ]) ()));
+    List.iter (fun x ->
+      let row = store#append () in
+      store#set ~row ~column:mod_col x
+    ) list;
+    (tree_view, store)
       
+  let activate_module (eview, excl_store) 
+      (aview, acti_store) () =
+    if eview#selection#count_selected_rows == 0 then
+      ()
+    else
+      List.iter 
+	(fun item -> 
+	  ignore item
+	)
+	eview#selection#get_selected_rows
+      
+      
+  let display_filter_list () =
+    let w = GWindow.window ~height:400 () in
+    let packer = GPack.hbox ~packing:w#add () in
+    let (eview, excl_store) as excl = create_mod_list (!Symbols.exclude_modules) "Filtered modules" packer in
+    let vbox = GPack.vbox ~packing:packer#add () in
+    let (aview, acti_store) as acti = create_mod_list (!Symbols.active_modules) "Active Modules" packer in
+    let b1 = GButton.button ~label:"Activate ->" ~packing:vbox#add () in
+    let b2 = GButton.button ~label:"<- Exclude" ~packing:vbox#add () in
+    ignore (b1#connect#clicked (activate_module excl acti));
+    ignore b2;
+    w#show ()
 
   let set_menu_callbacks () =
     ignore(Menu_viewer.tools_menu_printer#connect#activate user_printer_callback);
-    ignore(Menu_viewer.tools_menu_step_choice#connect#toggled switch_step_command_callback)
-
+    ignore(Menu_viewer.tools_menu_step_choice#connect#toggled switch_step_command_callback);
+    ignore(Menu_viewer.tools_menu_filter#connect#activate display_filter_list)
 
 end
 

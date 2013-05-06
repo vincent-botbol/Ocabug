@@ -52,6 +52,8 @@ struct
   let tools_menu_step_choice = tf#add_check_item
     ~active:true "Skip standard libraries on step"
     
+  let tools_menu_filter = tf#add_item "Modify filter list"
+    
   let help_menu_about = hf#add_item 
     ~callback:(fun () -> Printf.printf "Ocabug - credits : Mathieu Chailloux, Vincent Botbol\n%!")
     "About..."
