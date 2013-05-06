@@ -18,6 +18,26 @@ let word_from_string str =
     incr i
   done;
   String.sub str 0 !i
+(*
+let insert_prompt c s =
+  let old_str = ref s in
+  let new_str = ref "" in
+  try
+    while true do
+      let i = String.index s '\n' in
+      old_str := String.sub 
+*)
+
+let print_buffer start_prompt end_prompt str =
+  if str <> "" then
+    Ocabug_view.write (start_prompt ^ str ^ end_prompt);
+  Ocabug_view.Command_invite.adjust_window ()
+
+let printing_function = print_buffer "$ " ""
+
+let print_command = print_buffer "(Ocabug) " "\n"
+
+let print_error = print_buffer "$ " "\n"
 
 let force_read () =
   Printf.fprintf outchan "%c" '\003';
@@ -25,28 +45,10 @@ let force_read () =
   my_input_line pipe_in
 
 let force_write () =
-  let answer = force_read () in
-  if answer <> "" then
-    Ocabug_view.write answer;
-  Ocabug_view.Command_invite.adjust_window ()
+  printing_function (force_read ())
 
-let printing_function str =
-  if str <> "" then
-    Ocabug_view.write (str^"\n");
-  Ocabug_view.Command_invite.adjust_window ()
 
-let print_error = printing_function
 
-(*
-  Printf.fprintf outchan "%s%!" str;
-  force_write ()
-*)
-(* 
-let write_answers () =
-  while true do
-    Ui_starter.invite#write_buffer (my_input_line Socket_config.pipe_in)
-  done
-*)
 
 (* classic iteri, not available before 4.0 *)
 let list_iteri f =
@@ -86,19 +88,3 @@ let dir_content dir =
     failwith "come check me in dir_content !"
   with
     | End_of_file -> !file_list
-
-(*
-(* ATTENTION CONFLIT AVEC source.ml *)
-let source_of_module mdl = (String.uncapitalize mdl) ^ ".ml"
-
-let module_of_source src = 
-  if (Filename.check_suffix src ".ml") ||
-    (Filename.check_suffix src ".mli")
-  then
-    String.capitalize (chop_extension (basename src))
-  else
-    begin
-      Printf.printf "File not found %s\n%!" src;
-      failwith "come in Ocabug_misc.module_of_source"
-    end
-*)

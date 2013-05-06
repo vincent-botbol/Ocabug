@@ -77,7 +77,7 @@ exception Command_line
 
 (** Utilities. **)
 let error text =
-  eprintf "%s@." text;
+  print_error (*"%s@."*) text;
   raise Command_line
 
 let check_not_windows feature =
@@ -170,6 +170,7 @@ let convert_module mdle =
 let current_line = ref ""
 
 let interprete_line ppf line =
+  Ocabug_misc.print_command line;
   current_line := line;
   let lexbuf = Lexing.from_string line in
   try
@@ -193,8 +194,14 @@ let interprete_line ppf line =
   with
     | Parsing.Parse_error ->
       Ocabug_view.write "Syntax error.\n";false
-    | Command_line -> Printf.printf "command line exn caught\n%!";false
-    | Toplevel -> Printf.printf "Toplevel exn caught\n%!";false
+    | Command_line ->
+      Ocabug_misc.force_write ();
+      Printf.printf "command line exn caught\n%!";
+      false
+    | Toplevel ->
+      Ocabug_misc.force_write ();
+      Printf.printf "Toplevel exn caught\n%!";
+      false
 
 let line_loop ppf line_buffer =
   resume_user_input ();
@@ -325,7 +332,7 @@ let instr_ocastep ppf lexbuf =
 	    | Some {rep_type = Exited} ->
 	      raise Exit
 	    | _ ->
-	      printing_function "Report type different from Event";
+	      printing_function "Report type different from Event\n";
 	      cont:=false
 	done
       with
@@ -353,7 +360,7 @@ let instr_ocabigstep ppf lexbuf =
       | Some {rep_type = Exited} ->
 	show_no_point ppf;
 	cont := false
-      | _ -> printing_function "Report type different from Event";cont:=false
+      | _ -> printing_function "Report type different from Event\n";cont:=false
   done;
   show_current_event ppf
   

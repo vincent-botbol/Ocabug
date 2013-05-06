@@ -133,7 +133,7 @@ let initialize_loading () =
 (* Ensure the program is already loaded. *)
 let ensure_loaded () =
   if not !loaded then begin
-    printing_function "Loading program... ";
+    printing_function "Loading program... \n";
     if !program_name = "" then begin
       print_error "No program specified.";
       raise Toplevel
@@ -145,7 +145,7 @@ let ensure_loaded () =
         print_error "Waiting for connection...";
       main_loop ();
       loaded := true;
-      printing_function "Program loaded";
+      printing_function "Program loaded\n";
     with
       x ->
         kill_program();
