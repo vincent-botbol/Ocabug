@@ -196,11 +196,9 @@ let interprete_line ppf line =
       Ocabug_view.write "Syntax error.\n";false
     | Command_line ->
       Ocabug_misc.force_write ();
-      Printf.printf "command line exn caught\n%!";
       false
     | Toplevel ->
       Ocabug_misc.force_write ();
-      Printf.printf "Toplevel exn caught\n%!";
       false
 
 let line_loop ppf line_buffer =

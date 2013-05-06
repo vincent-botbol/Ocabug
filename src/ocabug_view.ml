@@ -155,6 +155,13 @@ struct
   let breakpoint_pixbuf2 = GdkPixbuf.from_file "../img/icons/temp/decline.png"
   let event_pixbuf2 = GdkPixbuf.from_file "../img/icons/temp/control_add.png"
 
+  let scrolled_window = GBin.scrolled_window ~packing:packer#add 
+      ~height:300 ~hpolicy:`AUTOMATIC ~vpolicy:`AUTOMATIC ()
+
+  let adjust_window line =
+    let adj = scrolled_window#vadjustment in
+    adj#set_value (float_of_int (line * 10))
+
   let source_box = 
     let lang = 
       let lang_mime_type = "text/x-ocaml" in
@@ -163,9 +170,8 @@ struct
 	| None -> failwith (Printf.sprintf "no language for %s" lang_mime_type)
 	| Some lang -> lang
     in
-    let sw = GBin.scrolled_window ~packing:packer#add 
-      ~height:300 ~hpolicy:`AUTOMATIC ~vpolicy:`AUTOMATIC () in
-    let gsw = GSourceView2.source_view ~packing:sw#add ~editable:false 
+    let gsw = GSourceView2.source_view ~packing:scrolled_window#add 
+      ~editable:false 
       ~show_line_numbers:true
       ~right_margin_position:30
       ~smart_home_end:`ALWAYS
@@ -237,7 +243,7 @@ struct
 
   let adjust_window () =
     let adj = sw#vadjustment in
-    adj#set_value (adj#upper -. adj#page_size)
+    adj#set_value adj#upper
 
   let last_command = ref ""
 

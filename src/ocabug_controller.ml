@@ -129,32 +129,6 @@ struct
       event_callback;
     true
 
-(*
-  let show_events_from_module mdl =
-    current_event_boxes := Hashtbl.find event_boxes_by_module mdl;
-    List.iter
-      (fun (n, ebox) ->
-	print_int n;
-	let offset = (Events.get_pos ebox.event).Lexing.pos_cnum + n in
-	let gtk_ebox = GBin.event_box ~show:true () in
-	let pix = ebox.image#pixbuf in
-	ebox.image <-
-	  GMisc.image ~pixbuf:pix ~packing:gtk_ebox#add ();
-	print_endline "image loaded";
-	ignore(
-	  source_box#add_child_at_anchor 
-	    (gtk_ebox :> GObj.widget) 
-	    (source_buffer#create_child_anchor
-	       (source_buffer#get_iter (`OFFSET offset))));
-	print_endline "child added";
-	ignore(
-	  gtk_ebox#event#connect#button_press
-	    ~callback:(event_break_callback n ebox.event ebox.image))
-      )
-      !current_event_boxes;
-    Hashtbl.add source_buffer_by_module mdl source_box
-*)
-
   let show_events_from_module mdl =
     current_event_boxes := Hashtbl.find event_boxes_by_module mdl;
     list_iteri
@@ -212,7 +186,7 @@ struct
     if m <> !current_mod && List.mem m !active_modules then
       begin
 	current_mod := m;
-	print_endline m;
+	(*print_endline m;*)
 	source_file := Source.source_of_module Lexing.dummy_pos m;
 	load_source ();
 	show_events_from_module m

@@ -46,7 +46,12 @@ let set_current_event (ev : debug_event option) =
 	  !Ocabug_view.Modules_combo.switch_module_callback e'.ev_module ()
       | _ -> ()
   end;
-  current_event := ev
+  current_event := ev;
+  match ev with
+    | Some e ->
+      Ocabug_view.Source_viewer.adjust_window
+	e.ev_loc.Location.loc_start.Lexing.pos_lnum
+    | _ -> ()
 
 
 (* Current position in source. *)

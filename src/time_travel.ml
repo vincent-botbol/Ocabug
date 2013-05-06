@@ -27,6 +27,7 @@ open Input_handling
 open Debugger_config
 open Program_loading
 open Question
+open Ocabug_misc
 
 exception Current_checkpoint_lost
 exception Current_checkpoint_lost_start_at of int64 * int64
@@ -200,7 +201,7 @@ let find_checkpoint_before time =
   let rec find =
     function
       [] ->
-        print_string "Can't go that far in the past !"; print_newline ();
+        print_error "Can't go that far in the past !";
         if yes_or_no "Reload program" then begin
           load_program ();
           find !checkpoints
@@ -277,10 +278,8 @@ let rec stop_on_event report =
       ()
 
 and find_event () =
-  if !debug_time_travel then begin
-    print_string "Searching next event...";
-    print_newline ()
-  end;
+  if !debug_time_travel then
+    printing_function "Searching next event...\n";
   let report = do_go _1 in
   !current_checkpoint.c_report <- Some report;
   stop_on_event report
