@@ -1,6 +1,6 @@
 (***********************************************************************)
 (*                                                                     *)
-(*                           Objective Caml                            *)
+(*                                OCaml                                *)
 (*                                                                     *)
 (*            Xavier Leroy, projet Cristal, INRIA Rocquencourt         *)
 (*                                                                     *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: loadprinter.ml 9547 2010-01-22 12:48:24Z doligez $ *)
+(* $Id: loadprinter.ml 12673 2012-07-09 12:40:51Z xclerc $ *)
 
 (* Loading and installation of user-defined printer functions *)
 
@@ -95,6 +95,15 @@ let rec eval_path = function
 
 (* Install, remove a printer (as in toplevel/topdirs) *)
 
+(* since 4.00, "topdirs.cmi" is not in the same directory as the standard
+  libray, so we load it beforehand as it cannot be found in the search path. *)
+let () =
+  let compiler_libs =
+    Filename.concat Config.standard_library "compiler-libs" in
+  let topdirs =
+    Filename.concat compiler_libs "topdirs.cmi" in
+  ignore (Env.read_signature "Topdirs" topdirs)
+
 let match_printer_type desc typename =
   let (printer_type, _) =
     try
@@ -106,7 +115,7 @@ let match_printer_type desc typename =
   let ty_arg = Ctype.newvar() in
   Ctype.unify Env.empty
     (Ctype.newconstr printer_type [ty_arg])
-    (Ctype.instance desc.val_type);
+    (Ctype.instance Env.empty desc.val_type);
   Ctype.end_def();
   Ctype.generalize ty_arg;
   ty_arg
@@ -136,8 +145,7 @@ let install_printer ppf lid =
       (fun formatter repr -> Obj.obj v (Obj.obj repr))
     else
       (fun formatter repr -> Obj.obj v formatter (Obj.obj repr)) in
-  Printval.install_printer path ty_arg ppf print_function;
-  fprintf ppf "Printer %s installed\n%!" (name path)
+  Printval.install_printer path ty_arg ppf print_function
 
 let remove_printer lid =
   let (ty_arg, path, is_old_style) = find_printer_type lid in

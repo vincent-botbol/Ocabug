@@ -24,9 +24,9 @@ open Debugger_config
 open Types
 open Primitives
 open Unix_tools
-open Parser
+open Parser_debug
 open Parser_aux
-open Lexer
+open Lexer_debug
 open Input_handling
 open Question
 open Debugcom
@@ -88,7 +88,7 @@ let check_not_windows feature =
       ()
 
 let eol =
-  end_of_line Lexer.lexeme
+  end_of_line Lexer_debug.lexeme
 
 let matching_elements list name instr =
   List.filter (function a -> isprefix instr (name a)) !list
@@ -111,7 +111,7 @@ let matching_infos =
   matching_elements info_list (fun i -> i.info_name)
 
 let find_ident name matcher action alternative ppf lexbuf =
-  match identifier_or_eol Lexer.lexeme lexbuf with
+  match identifier_or_eol Lexer_debug.lexeme lexbuf with
   | None -> alternative ppf
   | Some ident ->
       match matcher ident with
@@ -174,7 +174,7 @@ let interprete_line ppf line =
   current_line := line;
   let lexbuf = Lexing.from_string line in
   try
-    match identifier_or_eol Lexer.lexeme lexbuf with
+    match identifier_or_eol Lexer_debug.lexeme lexbuf with
       | Some x ->
         begin match matching_instructions x with
           | [] ->
@@ -297,7 +297,7 @@ let instr_reverse ppf lexbuf =
 
 let instr_step ppf lexbuf =
   let step_count =
-    match opt_signed_int64_eol Lexer.lexeme lexbuf with
+    match opt_signed_int64_eol Lexer_debug.lexeme lexbuf with
     | None -> _1
     | Some x -> x
   in
@@ -365,7 +365,7 @@ let instr_ocabigstep ppf lexbuf =
 
 let instr_back ppf lexbuf =
   let step_count =
-    match opt_signed_int64_eol Lexer.lexeme lexbuf with
+    match opt_signed_int64_eol Lexer_debug.lexeme lexbuf with
     | None -> _1
     | Some x -> x
   in
@@ -384,7 +384,7 @@ let instr_finish ppf lexbuf =
 
 let instr_next ppf lexbuf =
   let step_count =
-    match opt_integer_eol Lexer.lexeme lexbuf with
+    match opt_integer_eol Lexer_debug.lexeme lexbuf with
     | None -> 1
     | Some x -> x
   in
@@ -403,7 +403,7 @@ let instr_start ppf lexbuf =
 
 let instr_previous ppf lexbuf =
   let step_count =
-    match opt_integer_eol Lexer.lexeme lexbuf with
+    match opt_integer_eol Lexer_debug.lexeme lexbuf with
     | None -> 1
     | Some x -> x
   in
@@ -414,7 +414,7 @@ let instr_previous ppf lexbuf =
     show_current_event ppf
 
 let instr_goto ppf lexbuf =
-  let time = int64_eol Lexer.lexeme lexbuf in
+  let time = int64_eol Lexer_debug.lexeme lexbuf in
     ensure_loaded ();
     reset_named_values();
     go_to time;
@@ -440,14 +440,14 @@ let instr_complete ppf lexbuf =
     with _ ->
       remove_file !user_channel
   and match_list lexbuf =
-    match identifier_or_eol Lexer.lexeme lexbuf with
+    match identifier_or_eol Lexer_debug.lexeme lexbuf with
     | None ->
         List.map (fun i -> i.instr_name) !instruction_list
     | Some x ->
         match matching_instructions x with
         | [ {instr_name = ("set" | "show" as i_full)} ] ->
             if x = i_full then begin
-              match identifier_or_eol Lexer.lexeme lexbuf with
+              match identifier_or_eol Lexer_debug.lexeme lexbuf with
               | Some ident ->
                   begin match matching_variables ident with
                   | [v] -> if v.var_name = ident then [] else [v.var_name]
@@ -459,7 +459,7 @@ let instr_complete ppf lexbuf =
             else [i_full]
         | [ {instr_name = "info"} ] ->
             if x = "info" then begin
-              match identifier_or_eol Lexer.lexeme lexbuf with
+              match identifier_or_eol Lexer_debug.lexeme lexbuf with
               | Some ident ->
                   begin match matching_infos ident with
                   | [i] -> if i.info_name = ident then [] else [i.info_name]
@@ -481,7 +481,7 @@ let instr_complete ppf lexbuf =
 let instr_help ppf lexbuf =
   let pr_instrs ppf =
       List.iter (fun i -> fprintf ppf "%s@ " i.instr_name) in
-  match identifier_or_eol Lexer.lexeme lexbuf with
+  match identifier_or_eol Lexer_debug.lexeme lexbuf with
   | Some x ->
       let print_help nm hlp =
         eol lexbuf;
@@ -538,7 +538,7 @@ let print_expr depth ev env ppf expr =
     raise Toplevel
 
 let print_command depth ppf lexbuf =
-  let exprs = expression_list_eol Lexer.lexeme lexbuf in
+  let exprs = expression_list_eol Lexer_debug.lexeme lexbuf in
   ensure_loaded ();
   let env =
     try
@@ -613,7 +613,7 @@ let instr_info =
        error "\"info\" must be followed by the name of an info command.")
 
 let instr_break ppf lexbuf =
-  let argument = break_argument_eol Lexer.lexeme lexbuf in
+  let argument = break_argument_eol Lexer_debug.lexeme lexbuf in
     ensure_loaded ();
     match argument with
     |  BA_none ->                                (* break *)
@@ -676,7 +676,7 @@ let instr_break ppf lexbuf =
             eprintf "Can't find any event there.@."
 
 let instr_delete ppf lexbuf =
-  match integer_list_eol Lexer.lexeme lexbuf with
+  match integer_list_eol Lexer_debug.lexeme lexbuf with
   | [] ->
       if breakpoints_count () <> 0 && yes_or_no "Delete all breakpoints"
       then remove_all_breakpoints ()
@@ -687,7 +687,7 @@ let instr_delete ppf lexbuf =
 
 let instr_frame ppf lexbuf =
   let frame_number =
-    match opt_integer_eol Lexer.lexeme lexbuf with
+    match opt_integer_eol Lexer_debug.lexeme lexbuf with
     | None -> !current_frame
     | Some x -> x
   in
@@ -701,7 +701,7 @@ let instr_frame ppf lexbuf =
 
 let instr_backtrace ppf lexbuf =
   let number =
-    match opt_signed_integer_eol Lexer.lexeme lexbuf with
+    match opt_signed_integer_eol Lexer_debug.lexeme lexbuf with
     | None -> 0
     | Some x -> x in
   ensure_loaded ();
@@ -738,7 +738,7 @@ let instr_backtrace ppf lexbuf =
 
 let instr_up ppf lexbuf =
   let offset =
-    match opt_signed_integer_eol Lexer.lexeme lexbuf with
+    match opt_signed_integer_eol Lexer_debug.lexeme lexbuf with
     | None -> 1
     | Some x -> x
   in
@@ -751,7 +751,7 @@ let instr_up ppf lexbuf =
 
 let instr_down ppf lexbuf =
   let offset =
-    match opt_signed_integer_eol Lexer.lexeme lexbuf with
+    match opt_signed_integer_eol Lexer_debug.lexeme lexbuf with
     | None -> 1
     | Some x -> x
   in
@@ -764,7 +764,7 @@ let instr_down ppf lexbuf =
 
 let instr_last ppf lexbuf =
   let count =
-    match opt_signed_int64_eol Lexer.lexeme lexbuf with
+    match opt_signed_int64_eol Lexer_debug.lexeme lexbuf with
     | None -> _1
     | Some x -> x
   in
@@ -774,7 +774,7 @@ let instr_last ppf lexbuf =
     show_current_event ppf
 
 let instr_list ppf lexbuf =
-  let (mo, beg, e) = list_arguments_eol Lexer.lexeme lexbuf in
+  let (mo, beg, e) = list_arguments_eol Lexer_debug.lexeme lexbuf in
     let (curr_mod, line, column) =
       try
         selected_point ()
@@ -830,14 +830,14 @@ let raw_line_variable kill name =
 
 let integer_variable kill min msg name =
   (function lexbuf ->
-     let argument = integer_eol Lexer.lexeme lexbuf in
+     let argument = integer_eol Lexer_debug.lexeme lexbuf in
        if argument < min then print_endline msg
        else if (not kill) || ask_kill_program () then name := argument),
   function ppf -> fprintf ppf "%i@." !name
 
 let int64_variable kill min msg name =
   (function lexbuf ->
-     let argument = int64_eol Lexer.lexeme lexbuf in
+     let argument = int64_eol Lexer_debug.lexeme lexbuf in
        if argument < min then print_endline msg
        else if (not kill) || ask_kill_program () then name := argument),
   function ppf -> fprintf ppf "%Li@." !name
@@ -845,7 +845,7 @@ let int64_variable kill min msg name =
 let boolean_variable kill name =
   (function lexbuf ->
      let argument =
-       match identifier_eol Lexer.lexeme lexbuf with
+       match identifier_eol Lexer_debug.lexeme lexbuf with
        | "on" -> true
        | "of" | "off" -> false
        | _ -> error "Syntax error."
@@ -880,7 +880,7 @@ let loading_mode_variable ppf =
 let follow_fork_variable =
   (function lexbuf ->
      let mode =
-       match identifier_eol Lexer.lexeme lexbuf with
+       match identifier_eol Lexer_debug.lexeme lexbuf with
        | "child" -> Fork_child
        | "parent" -> Fork_parent
        | _ -> error "Syntax error."
@@ -946,7 +946,7 @@ let info_breakpoints ppf lexbuf =
 
 let info_events ppf lexbuf =
   ensure_loaded ();
-  let mdle = convert_module (module_of_longident (opt_longident_eol Lexer.lexeme lexbuf)) in
+  let mdle = convert_module (module_of_longident (opt_longident_eol Lexer_debug.lexeme lexbuf)) in
     print_endline ("Module : " ^ mdle);
     print_endline "   Address  Characters        Kind      Repr.";
     List.iter
@@ -990,7 +990,7 @@ let instr_load_printer ppf lexbuf =
 
 let instr_install_printer ppf lexbuf =
   print_endline "INSTALL PRINTER";
-  let lid = longident_eol Lexer.lexeme lexbuf in
+  let lid = longident_eol Lexer_debug.lexeme lexbuf in
   try
     Loadprinter.install_printer ppf lid;
     print_endline "YABON"
@@ -999,7 +999,7 @@ let instr_install_printer ppf lexbuf =
     raise Toplevel
 
 let instr_remove_printer ppf lexbuf =
-  let lid = longident_eol Lexer.lexeme lexbuf in
+  let lid = longident_eol Lexer_debug.lexeme lexbuf in
   try
     Loadprinter.remove_printer lid
   with Loadprinter.Error e ->

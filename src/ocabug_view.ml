@@ -79,12 +79,12 @@ struct
     (* kind, label, tooltip *)
     button_kind * string * string 
       
-  let get_icon_path = function
-    | Step -> "../img/icons/step.png"
-    | Backstep -> "../img/icons/backstep.png"
-    | Run -> "../img/icons/run.png"
-    | Reverse -> "../img/icons/temp/bullet_left.png"
-    | Bigstep -> "../img/icons/temp/forward_green.png"
+  let xpm_data_from_kind = Ocabug_icons.(function
+    | Step -> step_icon
+    | Backstep -> backstep_icon
+    | Run -> run_icon
+    | Reverse -> bullet_left_icon
+    | Bigstep -> forward_green_icon)
 
   let toolbar = GButton.toolbar ~orientation:`HORIZONTAL
       ~style:`BOTH_HORIZ ~border_width:5
@@ -93,10 +93,11 @@ struct
       
   let buttons = 
     List.map (fun ((kind, label, tooltip) : button_elem) ->
+      let img_pixbuf = GdkPixbuf.(add_alpha ~transparent:(255,255,255)(from_xpm_data (xpm_data_from_kind kind))) in
       let b = toolbar#insert_button
 	~text:label
 	~tooltip:tooltip
-	~icon:((GMisc.image ~file:(get_icon_path kind) ()) :> GObj.widget)
+	~icon:((GMisc.image ~pixbuf:img_pixbuf ()) :> GObj.widget)
 	() in
       b#set_focus_on_click false;
       (kind,b)
@@ -151,11 +152,13 @@ struct
     ~border_width:5
     ~shadow_type:`IN
     ~packing:vbox#add ()
-  
-  let breakpoint_pixbuf = GdkPixbuf.from_file "../img/breakpoint.png"
-  let event_pixbuf = GdkPixbuf.from_file "../img/icons/temp/bullet_plus.png"
-  let breakpoint_pixbuf2 = GdkPixbuf.from_file "../img/icons/temp/decline.png"
-  let event_pixbuf2 = GdkPixbuf.from_file "../img/icons/temp/control_add.png"
+
+  open Ocabug_icons
+
+  let breakpoint_pixbuf = GdkPixbuf.from_xpm_data breakpoint_icon
+  let event_pixbuf = GdkPixbuf.from_xpm_data bullet_plus_icon
+  let breakpoint_pixbuf2 = GdkPixbuf.from_xpm_data decline_icon
+  let event_pixbuf2 = GdkPixbuf.from_xpm_data control_add_icon
 
   let scrolled_window = GBin.scrolled_window ~packing:packer#add 
       ~height:300 ~hpolicy:`AUTOMATIC ~vpolicy:`AUTOMATIC ()

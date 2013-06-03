@@ -1,9 +1,9 @@
 (***********************************************************************)
 (*                                                                     *)
-(*                           Objective Caml                            *)
+(*                                OCaml                                *)
 (*                                                                     *)
 (*          Jerome Vouillon, projet Cristal, INRIA Rocquencourt        *)
-(*          Objective Caml port by John Malecki and Xavier Leroy       *)
+(*          OCaml port by John Malecki and Xavier Leroy                *)
 (*                                                                     *)
 (*  Copyright 1996 Institut National de Recherche en Informatique et   *)
 (*  en Automatique.  All rights reserved.  This file is distributed    *)
@@ -11,7 +11,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: envaux.ml 9547 2010-01-22 12:48:24Z doligez $ *)
+(* $Id: envaux.ml 12511 2012-05-30 13:29:48Z lefessan $ *)
 
 open Misc
 open Types
@@ -31,7 +31,7 @@ let reset_cache () =
 
 let extract_sig env mty =
   match Mtype.scrape env mty with
-    Tmty_signature sg -> sg
+    Mty_signature sg -> sg
   | _ -> fatal_error "Envaux.extract_sig"
 
 let rec env_from_summary sum subst =

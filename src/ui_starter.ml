@@ -90,7 +90,7 @@ class source_viewer packer =
 object(self)
 
   
-  val breakpoint_pixbuf = GdkPixbuf.from_file "../img/breakpoint.png"
+  val breakpoint_pixbuf = GdkPixbuf.from_xpm_data Ocabug_icons.breakpoint
 
   val source_box = 
     let lang = 
@@ -212,9 +212,9 @@ let step_callback () =
   Printf.printf "step pressed\n%!"
 
 let add_icons packer =
-  let paths_and_callbacks = [ ("../img/icons/backstep.png", backstep_callback)
-			   ; ("../img/icons/run.png", run_callback)
-			   ; ("../img/icons/step.png", step_callback) ]  in
+  let paths_and_callbacks = [ ("../img/backstep.png", backstep_callback)
+			   ; ("../img/run.png", run_callback)
+			   ; ("../img/step.png", step_callback) ]  in
   List.iter
     (fun (path, callback) ->
       let button = GButton.button ~packing:packer#add () in
@@ -237,7 +237,7 @@ let () =
   let icons_hbox = GPack.hbox ~packing:vbox#add () in
   add_icons icons_hbox
 
-(** separator icons/source *)
+(** separator source *)
 let () = ignore(GMisc.separator `HORIZONTAL ~packing:vbox#add ())
 
 let source_box = new source_viewer vbox

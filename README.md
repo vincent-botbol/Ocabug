@@ -1,30 +1,12 @@
 Ocabug
 ======
 
-TODO:
-- ajout des filtres
-- switch automatique du module lorsque l'on passe dedans
-- adaptation de la position du code source à l'event courant
-- surligner l'expression courante
+Graphical Interface for Ocamldebug
 
-- Compter le nombre de passage sur un event
-  (pour cela, il faut toucher à internal_step dans time_travel.ml et ne faire des step que de 1 mais n fois plutôt qu'un step de n)
-- Détecter le changement de thread dans la VM
-- Gérer les images pour garder la cohérence entre évènements parents
-- ...
+version: 0.1
 
-Visual ocaml debugger
+depends: threads, lablgtk2, lablgtk2.sourceview2,dynlink,compiler-libs,compiler-libs.common,compiler-libs.toplevel
 
-Pour compiler, éditez le src/Makefile et indiquez le chemin vers les sources d'ocaml. Il faut également compiler les sources OCaml avant de pouvoir compiler le déboggueur visuel.
 
-packages required :
+quick use: install opam then opam install <depends> then make
 
-liblablgtk2-ocaml[-dev]
-liblablgtksourceview2-ocaml[-dev]
-
-Found bugs :
-
-my_protect => sig_int : rappelle show_ui ~~
-Exit => plus propre. Peut-être gérer au niveau du controller plutôt que de la view (Fatal error : EOF) -> fermer les io
-toolbar => le premier élément prend le focus, j'ai aucune idée du pourquoi
-	   solution possible : donner le focus au toplevel
