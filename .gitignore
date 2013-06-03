@@ -3,11 +3,6 @@
 *.cmo
 *.cmx
 
-src/.depend
-*#*#
-src/Makefile
-src/dynlink*
-mathieu
 bin/*
 
 *.aux
